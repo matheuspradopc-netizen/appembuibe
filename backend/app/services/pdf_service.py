@@ -26,6 +26,7 @@ class PDFService:
         cliente_nome: str,
         cidade: str,
         local_embarque: str,
+        endereco_embarque: str,
         data_viagem: str,
         horario: str,
         valor: Decimal,
@@ -40,7 +41,8 @@ class PDFService:
             numero: Número da passagem
             cliente_nome: Nome do passageiro
             cidade: Cidade de origem
-            local_embarque: Local de embarque
+            local_embarque: Local de embarque (região)
+            endereco_embarque: Endereço específico onde buscar o passageiro
             data_viagem: Data da viagem (formatada)
             horario: Horário da viagem (formatado)
             valor: Valor da passagem
@@ -69,6 +71,11 @@ class PDFService:
         # DADOS DA PASSAGEM
         y = self._desenhar_campo(c, y, "Passageiro:", cliente_nome)
         y = self._desenhar_campo(c, y, "Origem:", f"{cidade} - {local_embarque}")
+        
+        # Endereço de embarque (onde buscar)
+        if endereco_embarque:
+            y = self._desenhar_campo(c, y, "Buscar em:", endereco_embarque)
+        
         y = self._desenhar_campo(c, y, "Destino:", settings.DESTINO_PADRAO)
         y = self._desenhar_campo(c, y, "Data da Viagem:", data_viagem)
         y = self._desenhar_campo(c, y, "Horário:", horario)
@@ -151,147 +158,6 @@ class PDFService:
         largura_texto = c.stringWidth(texto, "Helvetica", 8)
         x = (self.page_width - largura_texto) / 2
         c.drawString(x, y, texto)
-
-
-    def gerar_manifesto_viagem_pdf(
-        self,
-        numero_viagem: int,
-        data_viagem: str,
-        horario_programado: str,
-        horario_saida: str,
-        motorista_nome: str,
-        proprietario_nome: str,
-        passageiros: list,
-        total_passageiros: int,
-        valor_total: Decimal
-    ) -> str:
-        """
-        Gera o PDF do manifesto de viagem
-
-        Args:
-            numero_viagem: ID da viagem
-            data_viagem: Data da viagem formatada
-            horario_programado: Horário programado
-            horario_saida: Horário de saída real
-            motorista_nome: Nome do motorista
-            proprietario_nome: Nome do proprietário do veículo
-            passageiros: Lista de passageiros
-            total_passageiros: Total de passageiros
-            valor_total: Valor total da viagem
-
-        Returns:
-            PDF em base64
-        """
-        from reportlab.lib.pagesizes import A4
-
-        buffer = BytesIO()
-        c = canvas.Canvas(buffer, pagesize=A4)
-        page_width, page_height = A4
-
-        y = page_height - 30
-
-        # CABEÇALHO
-        c.setFont("Helvetica-Bold", 18)
-        texto = "EXPRESSO EMBUIBE"
-        largura_texto = c.stringWidth(texto, "Helvetica-Bold", 18)
-        x = (page_width - largura_texto) / 2
-        c.drawString(x, y, texto)
-        y -= 25
-
-        c.setFont("Helvetica-Bold", 14)
-        texto = "MANIFESTO DE VIAGEM"
-        largura_texto = c.stringWidth(texto, "Helvetica-Bold", 14)
-        x = (page_width - largura_texto) / 2
-        c.drawString(x, y, texto)
-        y -= 20
-
-        # Linha separadora
-        c.setStrokeColor(colors.black)
-        c.setLineWidth(2)
-        c.line(40, y, page_width - 40, y)
-        y -= 25
-
-        # DADOS DA VIAGEM
-        c.setFont("Helvetica-Bold", 11)
-        c.drawString(40, y, f"Viagem Nº: {numero_viagem}")
-        c.drawString(250, y, f"Data: {data_viagem}")
-        y -= 18
-
-        c.drawString(40, y, f"Horário Programado: {horario_programado}")
-        c.drawString(250, y, f"Horário de Saída: {horario_saida}")
-        y -= 18
-
-        c.drawString(40, y, f"Motorista: {motorista_nome}")
-        y -= 18
-
-        c.drawString(40, y, f"Proprietário: {proprietario_nome}")
-        y -= 25
-
-        # Linha separadora
-        c.setLineWidth(1)
-        c.line(40, y, page_width - 40, y)
-        y -= 20
-
-        # TABELA DE PASSAGEIROS
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(40, y, "#")
-        c.drawString(60, y, "Passageiro")
-        c.drawString(250, y, "Origem")
-        c.drawString(350, y, "Local Embarque")
-        c.drawString(490, y, "Valor")
-        y -= 5
-
-        c.setLineWidth(0.5)
-        c.line(40, y, page_width - 40, y)
-        y -= 15
-
-        c.setFont("Helvetica", 9)
-        for idx, p in enumerate(passageiros, 1):
-            if y < 100:  # Nova página se necessário
-                c.showPage()
-                y = page_height - 50
-                c.setFont("Helvetica", 9)
-
-            c.drawString(40, y, str(idx))
-            # Truncar nome se muito grande
-            nome = p.get('cliente_nome', p.get('nome', 'N/A'))[:30]
-            c.drawString(60, y, nome)
-            c.drawString(250, y, p.get('cidade', 'N/A')[:15])
-            c.drawString(350, y, p.get('local_embarque', 'N/A')[:20])
-            valor = p.get('valor', 0)
-            c.drawString(490, y, f"R$ {valor:.2f}")
-            y -= 14
-
-        # TOTAIS
-        y -= 10
-        c.setLineWidth(1)
-        c.line(40, y, page_width - 40, y)
-        y -= 20
-
-        c.setFont("Helvetica-Bold", 11)
-        c.drawString(40, y, f"TOTAL DE PASSAGEIROS: {total_passageiros}")
-        c.drawString(350, y, f"VALOR TOTAL: R$ {valor_total:.2f}")
-        y -= 30
-
-        # RODAPÉ
-        c.setLineWidth(2)
-        c.line(40, y, page_width - 40, y)
-        y -= 20
-
-        c.setFont("Helvetica", 8)
-        texto = f"Documento gerado em: {datetime.now().strftime('%d/%m/%Y às %H:%M')}"
-        c.drawString(40, y, texto)
-        y -= 12
-        texto = "Este documento é o registro oficial da viagem."
-        c.drawString(40, y, texto)
-
-        c.showPage()
-        c.save()
-
-        pdf_bytes = buffer.getvalue()
-        buffer.close()
-
-        return base64.b64encode(pdf_bytes).decode('utf-8')
 
 
 # Instância global do serviço
