@@ -30,6 +30,10 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
+// Debug: mostra a URL da API
+console.log('API URL:', API_BASE_URL);
+console.log('Location:', window.location.href);
+
 /**
  * Cliente HTTP com gerenciamento de autenticação
  */
