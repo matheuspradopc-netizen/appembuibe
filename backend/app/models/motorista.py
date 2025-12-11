@@ -20,7 +20,7 @@ class Motorista(Base):
 
     # Relacionamentos
     proprietario = relationship("Proprietario", back_populates="motoristas")
-    passagens = relationship("Passagem", back_populates="motorista")
+    passagens = relationship("Passagem", back_populates="motorista", foreign_keys="[Passagem.motorista_id]")
     viagens = relationship("Viagem", back_populates="motorista")
 
     def __repr__(self):
