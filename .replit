@@ -1,14 +1,46 @@
 run = "cd backend && pip install -r requirements.txt && python create_tables.py && python seed_data.py && uvicorn app.main:app --host 0.0.0.0 --port 8080"
 entrypoint = "backend/app/main.py"
-modules = ["web", "python-3.12", "nodejs-20"]
+modules = ["web", "nodejs-20", "python-3.11"]
 
 [nix]
 channel = "stable-25_05"
+packages = ["freetype", "glibcLocales", "libxcrypt"]
 
 [deployment]
 run = ["sh", "-c", "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8080"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
 localPort = 8080
 externalPort = 80
+
+[agent]
+expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Expresso Embuibe"
+
+[[workflows.workflow]]
+name = "Expresso Embuibe"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd /home/runner/workspace/backend && uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
