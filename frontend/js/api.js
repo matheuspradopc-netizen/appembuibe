@@ -338,10 +338,10 @@ class ApiService {
   }
 
   /**
-   * Registra saída de viagem
+   * Confirma saída de viagem (marca viagem como SAIU)
    */
   async registrarSaida(data) {
-    return this.client.post('/viagens/registrar-saida', data);
+    return this.client.post('/viagens/confirmar-saida', data);
   }
 
   /**

@@ -262,8 +262,12 @@
               <strong class="text-small" id="modalData">-</strong>
             </div>
             <div style="display: flex; justify-content: space-between;">
-              <span class="text-small" style="color: var(--slate-600);">Horário</span>
+              <span class="text-small" style="color: var(--slate-600);">Horário Programado</span>
               <strong class="text-small" id="modalHorario">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="text-small" style="color: var(--slate-600);">Horário de Saída</span>
+              <strong class="text-small" style="color: var(--success-600);" id="modalDataSaida">-</strong>
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span class="text-small" style="color: var(--slate-600);">Motorista</span>
@@ -285,6 +289,10 @@
         </div>
       </div>
       <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="baixarManifestoPDF()">
+          <i data-lucide="download"></i>
+          <span>Baixar PDF</span>
+        </button>
         <button class="btn btn-ghost" onclick="imprimirManifesto()">
           <i data-lucide="printer"></i>
           <span>Imprimir</span>
@@ -452,6 +460,9 @@
       lucide.createIcons();
     }
 
+    // Variável para armazenar o PDF do manifesto
+    let manifestoPdfBase64 = null;
+
     // Confirmar saída
     async function confirmarSaida() {
       if (!dadosViagem || passageiros.length === 0) {
@@ -475,19 +486,30 @@
           observacoes: document.getElementById('observacoes').value || null
         };
 
-        await api.registrarSaida(dados);
+        const resultado = await api.registrarSaida(dados);
+
+        // Armazenar PDF do manifesto
+        manifestoPdfBase64 = resultado.pdf_base64 || null;
 
         // Preencher dados no modal de sucesso
         const dataObj = new Date(dadosViagem.data + 'T00:00:00');
         const dataFormatada = dataObj.toLocaleDateString('pt-BR');
         const valorTotal = passageiros.reduce((sum, p) => sum + (p.valor || 0), 0);
 
-        document.getElementById('modalData').textContent = dataFormatada;
-        document.getElementById('modalHorario').textContent = dadosViagem.horario;
-        document.getElementById('modalMotorista').textContent = dadosViagem.motorista_nome;
-        document.getElementById('modalProprietario').textContent = dadosViagem.proprietario_nome || '-';
-        document.getElementById('modalPassageiros').textContent = passageiros.length;
-        document.getElementById('modalValor').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+        document.getElementById('modalData').textContent = resultado.viagem?.data || dataFormatada;
+        document.getElementById('modalHorario').textContent = resultado.viagem?.horario || dadosViagem.horario;
+        document.getElementById('modalMotorista').textContent = resultado.viagem?.motorista || dadosViagem.motorista_nome;
+        document.getElementById('modalProprietario').textContent = resultado.viagem?.proprietario || dadosViagem.proprietario_nome || '-';
+        document.getElementById('modalPassageiros').textContent = resultado.viagem?.passageiros || passageiros.length;
+        document.getElementById('modalValor').textContent = `R$ ${(resultado.viagem?.valor || valorTotal).toFixed(2).replace('.', ',')}`;
+
+        // Atualizar hora de saída no modal se disponível
+        if (resultado.viagem?.data_saida) {
+          const dataSaidaEl = document.getElementById('modalDataSaida');
+          if (dataSaidaEl) {
+            dataSaidaEl.textContent = resultado.viagem.data_saida;
+          }
+        }
 
         document.getElementById('successModal').classList.remove('hidden');
         lucide.createIcons();
@@ -498,6 +520,33 @@
         btn.classList.remove('btn-loading');
         btn.disabled = false;
       }
+    }
+
+    // Função para baixar o PDF do manifesto
+    function baixarManifestoPDF() {
+      if (!manifestoPdfBase64) {
+        alert('PDF não disponível');
+        return;
+      }
+
+      // Converter base64 para blob
+      const byteCharacters = atob(manifestoPdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+      // Criar link e fazer download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `manifesto_viagem_${dadosViagem.data}_${dadosViagem.horario.replace(':', '')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     }
 
     // Funções auxiliares
