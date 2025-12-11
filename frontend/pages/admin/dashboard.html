@@ -1,427 +1,602 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Admin - Expresso Embuibe</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../css/styles.css">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-</head>
-<body>
-  <div class="layout">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">
-          <i data-lucide="bus"></i>
-        </div>
-        <span class="sidebar-logo-text">Expresso Embuibe</span>
-      </div>
-
-      <nav class="sidebar-menu">
-        <div class="menu-section">
-          <div class="menu-section-title">Administração</div>
-          <a href="dashboard.html" class="menu-item active">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard Admin</span>
-          </a>
-          <a href="relatorios.html" class="menu-item">
-            <i data-lucide="file-text"></i>
-            <span>Relatórios Avançados</span>
-          </a>
-        </div>
-
-        <div class="menu-section">
-          <div class="menu-section-title">Atendimento</div>
-          <a href="../dashboard.html" class="menu-item">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard Atendente</span>
-          </a>
-          <a href="../emissao.html" class="menu-item">
-            <i data-lucide="ticket"></i>
-            <span>Emitir Passagem</span>
-          </a>
-          <a href="../clientes.html" class="menu-item">
-            <i data-lucide="users"></i>
-            <span>Clientes</span>
-          </a>
-        </div>
-
-        <div class="menu-section">
-          <div class="menu-section-title">Sistema</div>
-          <a href="#" class="menu-item" id="logoutBtn">
-            <i data-lucide="power"></i>
-            <span>Sair</span>
-          </a>
-        </div>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="sidebar-user">
-          <div class="sidebar-user-avatar" id="userAvatar">A</div>
-          <div class="sidebar-user-info">
-            <div class="sidebar-user-name" id="userName">Carregando...</div>
-            <div class="sidebar-user-role">Administrador</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Admin - Expresso Embuibe</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/styles.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  </head>
+  <body>
+    <div class="layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <i data-lucide="bus"></i>
           </div>
+          <span class="sidebar-logo-text">Expresso Embuibe</span>
         </div>
-      </div>
-    </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="main">
-      <header class="header">
-        <div>
-          <h1 class="header-title" id="greetingText">Dashboard Administrativo</h1>
-          <p class="text-small" style="color: var(--slate-500); margin-top: 0.25rem;" id="currentDateTime">Carregando...</p>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-ghost" onclick="loadDashboard()">
-            <i data-lucide="refresh-cw"></i>
-            <span>Atualizar</span>
-          </button>
-        </div>
-      </header>
+        <nav class="sidebar-menu">
+          <div class="menu-section">
+            <div class="menu-section-title">Administração</div>
+            <a href="dashboard.html" class="menu-item active">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard Admin</span>
+            </a>
+            <a href="relatorios.html" class="menu-item">
+              <i data-lucide="file-text"></i>
+              <span>Relatórios Avançados</span>
+            </a>
+          </div>
 
-      <div class="content">
-        <!-- MÉTRICAS EXPANDIDAS -->
-        <div style="margin-bottom: 1.5rem;">
-          <h3 class="text-h3" style="margin-bottom: 1rem; color: var(--slate-800);">Hoje</h3>
-          <div class="grid-4 animate-fade-in">
-            <div class="metric-card stagger-1" style="--icon-bg: var(--primary-50); --icon-color: var(--primary-600);">
-              <div class="metric-icon">
-                <i data-lucide="bus"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Viagens</div>
-                <div class="metric-value" id="viagensHoje">-</div>
-              </div>
-            </div>
+          <div class="menu-section">
+            <div class="menu-section-title">Atendimento</div>
+            <a href="../dashboard.html" class="menu-item">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard Atendente</span>
+            </a>
+            <a href="../emissao.html" class="menu-item">
+              <i data-lucide="ticket"></i>
+              <span>Emitir Passagem</span>
+            </a>
+            <a href="../clientes.html" class="menu-item">
+              <i data-lucide="users"></i>
+              <span>Clientes</span>
+            </a>
+          </div>
 
-            <div class="metric-card stagger-2" style="--icon-bg: var(--success-50); --icon-color: var(--success-600);">
-              <div class="metric-icon">
-                <i data-lucide="users"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Passageiros</div>
-                <div class="metric-value" id="passageirosHoje">-</div>
-              </div>
-            </div>
+          <div class="menu-section">
+            <div class="menu-section-title">Sistema</div>
+            <a href="#" class="menu-item" id="logoutBtn">
+              <i data-lucide="power"></i>
+              <span>Sair</span>
+            </a>
+          </div>
+        </nav>
 
-            <div class="metric-card stagger-3" style="--icon-bg: var(--warning-50); --icon-color: var(--warning-500);">
-              <div class="metric-icon">
-                <i data-lucide="dollar-sign"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Faturamento</div>
-                <div class="metric-value" id="faturamentoHoje">-</div>
-              </div>
-            </div>
-
-            <div class="metric-card stagger-4" style="--icon-bg: var(--primary-50); --icon-color: var(--primary-600);">
-              <div class="metric-icon">
-                <i data-lucide="trending-up"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Ticket Médio</div>
-                <div class="metric-value" id="ticketMedio">-</div>
-              </div>
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div class="sidebar-user-avatar" id="userAvatar">A</div>
+            <div class="sidebar-user-info">
+              <div class="sidebar-user-name" id="userName">Carregando...</div>
+              <div class="sidebar-user-role">Administrador</div>
             </div>
           </div>
         </div>
+      </aside>
 
-        <!-- MÉTRICAS SEMANAIS -->
-        <div style="margin-bottom: 1.5rem;">
-          <h3 class="text-h3" style="margin-bottom: 1rem; color: var(--slate-800);">Esta Semana</h3>
-          <div class="grid-4 animate-slide-up stagger-1">
-            <div class="metric-card" style="--icon-bg: var(--slate-50); --icon-color: var(--slate-600);">
-              <div class="metric-icon">
-                <i data-lucide="calendar-days"></i>
+      <!-- MAIN CONTENT -->
+      <main class="main">
+        <header class="header">
+          <div>
+            <h1 class="header-title" id="greetingText">
+              Dashboard Administrativo
+            </h1>
+            <p
+              class="text-small"
+              style="color: var(--slate-500); margin-top: 0.25rem"
+              id="currentDateTime"
+            >
+              Carregando...
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost" onclick="loadDashboard()">
+              <i data-lucide="refresh-cw"></i>
+              <span>Atualizar</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="content">
+          <!-- MÉTRICAS EXPANDIDAS -->
+          <div style="margin-bottom: 1.5rem">
+            <h3
+              class="text-h3"
+              style="margin-bottom: 1rem; color: var(--slate-800)"
+            >
+              Hoje
+            </h3>
+            <div class="grid-4 animate-fade-in">
+              <div
+                class="metric-card stagger-1"
+                style="
+                  --icon-bg: var(--primary-50);
+                  --icon-color: var(--primary-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="bus"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Viagens</div>
+                  <div class="metric-value" id="viagensHoje">-</div>
+                </div>
               </div>
-              <div class="metric-content">
-                <div class="metric-label">Viagens</div>
-                <div class="metric-value" id="viagensSemana">-</div>
-                <div class="metric-trend positive">
+
+              <div
+                class="metric-card stagger-2"
+                style="
+                  --icon-bg: var(--success-50);
+                  --icon-color: var(--success-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="users"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Passageiros</div>
+                  <div class="metric-value" id="passageirosHoje">-</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card stagger-3"
+                style="
+                  --icon-bg: var(--warning-50);
+                  --icon-color: var(--warning-500);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Faturamento</div>
+                  <div class="metric-value" id="faturamentoHoje">-</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card stagger-4"
+                style="
+                  --icon-bg: var(--primary-50);
+                  --icon-color: var(--primary-600);
+                "
+              >
+                <div class="metric-icon">
                   <i data-lucide="trending-up"></i>
-                  <span id="viagensSemanaTrend">-</span>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Ticket Médio</div>
+                  <div class="metric-value" id="ticketMedio">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MÉTRICAS SEMANAIS -->
+          <div style="margin-bottom: 1.5rem">
+            <h3
+              class="text-h3"
+              style="margin-bottom: 1rem; color: var(--slate-800)"
+            >
+              Esta Semana
+            </h3>
+            <div class="grid-4 animate-slide-up stagger-1">
+              <div
+                class="metric-card"
+                style="
+                  --icon-bg: var(--slate-50);
+                  --icon-color: var(--slate-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="calendar-days"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Viagens</div>
+                  <div class="metric-value" id="viagensSemana">-</div>
+                  <div class="metric-trend positive">
+                    <i data-lucide="trending-up"></i>
+                    <span id="viagensSemanaTrend">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                style="
+                  --icon-bg: var(--slate-50);
+                  --icon-color: var(--slate-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="user-check"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Passageiros</div>
+                  <div class="metric-value" id="passageirosSemana">-</div>
+                  <div class="metric-trend positive">
+                    <i data-lucide="trending-up"></i>
+                    <span id="passageirosSemanaTrend">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                style="
+                  --icon-bg: var(--slate-50);
+                  --icon-color: var(--slate-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="banknote"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Faturamento</div>
+                  <div class="metric-value" id="faturamentoSemana">-</div>
+                  <div class="metric-trend positive">
+                    <i data-lucide="trending-up"></i>
+                    <span id="faturamentoSemanaTrend">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                style="
+                  --icon-bg: var(--slate-50);
+                  --icon-color: var(--slate-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="users-round"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Novos Clientes</div>
+                  <div class="metric-value" id="novosClientesSemana">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MÉTRICAS MENSAIS -->
+          <div style="margin-bottom: 1.5rem">
+            <h3
+              class="text-h3"
+              style="margin-bottom: 1rem; color: var(--slate-800)"
+            >
+              Este Mês
+            </h3>
+            <div class="grid-3 animate-slide-up stagger-2">
+              <div
+                class="metric-card"
+                style="
+                  --icon-bg: var(--primary-50);
+                  --icon-color: var(--primary-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="calendar-range"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Total de Viagens</div>
+                  <div class="metric-value" id="viagensMes">-</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                style="
+                  --icon-bg: var(--success-50);
+                  --icon-color: var(--success-600);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="users"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Total de Passageiros</div>
+                  <div class="metric-value" id="passageirosMes">-</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                style="
+                  --icon-bg: var(--warning-50);
+                  --icon-color: var(--warning-500);
+                "
+              >
+                <div class="metric-icon">
+                  <i data-lucide="dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Faturamento Total</div>
+                  <div class="metric-value" id="faturamentoMes">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GRID 2 COLUNAS -->
+          <div class="grid-2 animate-slide-up stagger-3" style="gap: 1.5rem">
+            <!-- DISTRIBUIÇÃO POR CIDADE -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">Distribuição por Cidade</h2>
+                  <p class="card-subtitle">
+                    Passageiros por destino (mês atual)
+                  </p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="cidadesDistribuicao">
+                  <div
+                    style="
+                      text-align: center;
+                      padding: 2rem;
+                      color: var(--slate-400);
+                    "
+                  >
+                    <i
+                      data-lucide="loader"
+                      style="
+                        width: 32px;
+                        height: 32px;
+                        animation: spin 1s linear infinite;
+                      "
+                    ></i>
+                    <p style="margin-top: 0.5rem">Carregando...</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="metric-card" style="--icon-bg: var(--slate-50); --icon-color: var(--slate-600);">
-              <div class="metric-icon">
-                <i data-lucide="user-check"></i>
+            <!-- ÚLTIMAS VIAGENS -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">Últimas Viagens</h2>
+                  <p class="card-subtitle">Viagens registradas recentemente</p>
+                </div>
+                <a href="relatorios.html" class="btn btn-sm btn-ghost">
+                  <span>Ver todas</span>
+                  <i data-lucide="arrow-right"></i>
+                </a>
               </div>
-              <div class="metric-content">
-                <div class="metric-label">Passageiros</div>
-                <div class="metric-value" id="passageirosSemana">-</div>
-                <div class="metric-trend positive">
-                  <i data-lucide="trending-up"></i>
-                  <span id="passageirosSemanaTrend">-</span>
+              <div class="card-body" style="padding: 0">
+                <div
+                  class="table-container"
+                  style="max-height: 400px; overflow-y: auto"
+                >
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Motorista</th>
+                        <th>Passageiros</th>
+                        <th style="text-align: right">Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ultimasViagensTable">
+                      <tr>
+                        <td
+                          colspan="5"
+                          style="
+                            text-align: center;
+                            padding: 2rem;
+                            color: var(--slate-400);
+                          "
+                        >
+                          <i
+                            data-lucide="loader"
+                            style="
+                              width: 24px;
+                              height: 24px;
+                              animation: spin 1s linear infinite;
+                            "
+                          ></i>
+                          <p style="margin-top: 0.5rem">Carregando...</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
-
-            <div class="metric-card" style="--icon-bg: var(--slate-50); --icon-color: var(--slate-600);">
-              <div class="metric-icon">
-                <i data-lucide="banknote"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Faturamento</div>
-                <div class="metric-value" id="faturamentoSemana">-</div>
-                <div class="metric-trend positive">
-                  <i data-lucide="trending-up"></i>
-                  <span id="faturamentoSemanaTrend">-</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="metric-card" style="--icon-bg: var(--slate-50); --icon-color: var(--slate-600);">
-              <div class="metric-icon">
-                <i data-lucide="users-round"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Novos Clientes</div>
-                <div class="metric-value" id="novosClientesSemana">-</div>
-              </div>
-            </div>
           </div>
-        </div>
 
-        <!-- MÉTRICAS MENSAIS -->
-        <div style="margin-bottom: 1.5rem;">
-          <h3 class="text-h3" style="margin-bottom: 1rem; color: var(--slate-800);">Este Mês</h3>
-          <div class="grid-3 animate-slide-up stagger-2">
-            <div class="metric-card" style="--icon-bg: var(--primary-50); --icon-color: var(--primary-600);">
-              <div class="metric-icon">
-                <i data-lucide="calendar-range"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Total de Viagens</div>
-                <div class="metric-value" id="viagensMes">-</div>
-              </div>
-            </div>
-
-            <div class="metric-card" style="--icon-bg: var(--success-50); --icon-color: var(--success-600);">
-              <div class="metric-icon">
-                <i data-lucide="users"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Total de Passageiros</div>
-                <div class="metric-value" id="passageirosMes">-</div>
-              </div>
-            </div>
-
-            <div class="metric-card" style="--icon-bg: var(--warning-50); --icon-color: var(--warning-500);">
-              <div class="metric-icon">
-                <i data-lucide="dollar-sign"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Faturamento Total</div>
-                <div class="metric-value" id="faturamentoMes">-</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- GRID 2 COLUNAS -->
-        <div class="grid-2 animate-slide-up stagger-3" style="gap: 1.5rem;">
-          <!-- DISTRIBUIÇÃO POR CIDADE -->
-          <div class="card">
+          <!-- FORMAS DE PAGAMENTO -->
+          <div
+            class="card animate-slide-up stagger-4"
+            style="margin-top: 1.5rem"
+          >
             <div class="card-header">
               <div>
-                <h2 class="card-title">Distribuição por Cidade</h2>
-                <p class="card-subtitle">Passageiros por destino (mês atual)</p>
+                <h2 class="card-title">Formas de Pagamento</h2>
+                <p class="card-subtitle">
+                  Distribuição dos métodos de pagamento (mês atual)
+                </p>
               </div>
             </div>
             <div class="card-body">
-              <div id="cidadesDistribuicao">
-                <div style="text-align: center; padding: 2rem; color: var(--slate-400);">
-                  <i data-lucide="loader" style="width: 32px; height: 32px; animation: spin 1s linear infinite;"></i>
-                  <p style="margin-top: 0.5rem;">Carregando...</p>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                  gap: 1rem;
+                "
+                id="formasPagamento"
+              >
+                <div
+                  style="
+                    text-align: center;
+                    padding: 2rem;
+                    color: var(--slate-400);
+                  "
+                >
+                  <i
+                    data-lucide="loader"
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      animation: spin 1s linear infinite;
+                    "
+                  ></i>
+                  <p style="margin-top: 0.5rem">Carregando...</p>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- ÚLTIMAS VIAGENS -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Últimas Viagens</h2>
-                <p class="card-subtitle">Viagens registradas recentemente</p>
-              </div>
-              <a href="relatorios.html" class="btn btn-sm btn-ghost">
-                <span>Ver todas</span>
-                <i data-lucide="arrow-right"></i>
-              </a>
-            </div>
-            <div class="card-body" style="padding: 0;">
-              <div class="table-container" style="max-height: 400px; overflow-y: auto;">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Horário</th>
-                      <th>Motorista</th>
-                      <th>Passageiros</th>
-                      <th style="text-align: right;">Valor</th>
-                    </tr>
-                  </thead>
-                  <tbody id="ultimasViagensTable">
-                    <tr>
-                      <td colspan="5" style="text-align: center; padding: 2rem; color: var(--slate-400);">
-                        <i data-lucide="loader" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
-                        <p style="margin-top: 0.5rem;">Carregando...</p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
         </div>
+      </main>
+    </div>
 
-        <!-- FORMAS DE PAGAMENTO -->
-        <div class="card animate-slide-up stagger-4" style="margin-top: 1.5rem;">
-          <div class="card-header">
-            <div>
-              <h2 class="card-title">Formas de Pagamento</h2>
-              <p class="card-subtitle">Distribuição dos métodos de pagamento (mês atual)</p>
-            </div>
-          </div>
-          <div class="card-body">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;" id="formasPagamento">
-              <div style="text-align: center; padding: 2rem; color: var(--slate-400);">
-                <i data-lucide="loader" style="width: 32px; height: 32px; animation: spin 1s linear infinite;"></i>
-                <p style="margin-top: 0.5rem;">Carregando...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <script src="../../js/api.js"></script>
-  <script>
-    // Verificar autenticação e permissão admin
-    if (!api.client.getToken()) {
-      window.location.href = '../../index.html';
-    }
-
-    lucide.createIcons();
-
-    // Atualizar data/hora
-    function updateDateTime() {
-      const now = new Date();
-      const options = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      };
-      document.getElementById('currentDateTime').textContent = now.toLocaleDateString('pt-BR', options);
-
-      const hours = now.getHours();
-      let greeting = 'Bom dia';
-      if (hours >= 12 && hours < 18) greeting = 'Boa tarde';
-      else if (hours >= 18) greeting = 'Boa noite';
-
-      const userName = document.getElementById('userName').textContent;
-      if (userName !== 'Carregando...') {
-        document.getElementById('greetingText').textContent = `${greeting}, ${userName}!`;
+    <script src="../../js/api.js"></script>
+    <script>
+      // Verificar autenticação e permissão admin
+      if (!api.client.getToken()) {
+        window.location.href = "../../index.html";
       }
-    }
 
-    // Carregar dados do usuário
-    async function loadUserData() {
-      try {
-        const user = await api.getMe();
+      lucide.createIcons();
 
-        // Verificar se é admin
-        if (user.tipo !== 'admin') {
-          alert('Acesso negado! Apenas administradores podem acessar esta página.');
-          window.location.href = '../dashboard.html';
+      // Atualizar data/hora
+      function updateDateTime() {
+        const now = new Date();
+        const options = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        };
+        document.getElementById("currentDateTime").textContent =
+          now.toLocaleDateString("pt-BR", options);
+
+        const hours = now.getHours();
+        let greeting = "Bom dia";
+        if (hours >= 12 && hours < 18) greeting = "Boa tarde";
+        else if (hours >= 18) greeting = "Boa noite";
+
+        const userName = document.getElementById("userName").textContent;
+        if (userName !== "Carregando...") {
+          document.getElementById("greetingText").textContent =
+            `${greeting}, ${userName}!`;
+        }
+      }
+
+      // Carregar dados do usuário
+      async function loadUserData() {
+        try {
+          const user = await api.getMe();
+
+          // Verificar se é admin
+          if (user.tipo !== "admin") {
+            alert(
+              "Acesso negado! Apenas administradores podem acessar esta página.",
+            );
+            window.location.href = "../dashboard.html";
+            return;
+          }
+
+          document.getElementById("userName").textContent = user.nome;
+          const initials = user.nome
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .substring(0, 2)
+            .toUpperCase();
+          document.getElementById("userAvatar").textContent = initials;
+
+          updateDateTime();
+        } catch (error) {
+          console.error("Erro ao carregar usuário:", error);
+          window.location.href = "../../index.html";
+        }
+      }
+
+      // Carregar dashboard
+      async function loadDashboard() {
+        try {
+          const data = await api.getDashboardResumo();
+
+          // Métricas de Hoje
+          const faturamentoHoje = parseFloat(data.faturamento_hoje || 0);
+          document.getElementById("viagensHoje").textContent =
+            data.viagens_hoje || 0;
+          document.getElementById("passageirosHoje").textContent =
+            data.passageiros_hoje || 0;
+          document.getElementById("faturamentoHoje").textContent =
+            `R$ ${faturamentoHoje.toFixed(2).replace(".", ",")}`;
+
+          const ticketMedio =
+            data.passageiros_hoje > 0
+              ? faturamentoHoje / data.passageiros_hoje
+              : 0;
+          document.getElementById("ticketMedio").textContent =
+            `R$ ${ticketMedio.toFixed(2).replace(".", ",")}`;
+
+          // Métricas da Semana
+          document.getElementById("viagensSemana").textContent =
+            data.viagens_semana || 0;
+          document.getElementById("passageirosSemana").textContent =
+            data.passageiros_semana || 0;
+          document.getElementById("faturamentoSemana").textContent =
+            `R$ ${parseFloat(data.faturamento_semana || 0)
+              .toFixed(2)
+              .replace(".", ",")}`;
+          document.getElementById("novosClientesSemana").textContent =
+            data.novos_clientes_semana || 0;
+
+          // Ocultar trends (não implementados)
+          document
+            .querySelectorAll(".metric-trend")
+            .forEach((el) => (el.style.display = "none"));
+
+          // Métricas do Mês
+          document.getElementById("viagensMes").textContent =
+            data.viagens_mes || 0;
+          document.getElementById("passageirosMes").textContent =
+            data.passageiros_mes || 0;
+          document.getElementById("faturamentoMes").textContent =
+            `R$ ${parseFloat(data.faturamento_mes || 0)
+              .toFixed(2)
+              .replace(".", ",")}`;
+
+          // Distribuição por cidade
+          renderizarDistribuicaoCidades(data.distribuicao_cidades || []);
+
+          // Últimas viagens
+          renderizarUltimasViagens(data.ultimas_viagens || []);
+
+          // Formas de pagamento
+          renderizarFormasPagamento(data.formas_pagamento || []);
+
+          lucide.createIcons();
+        } catch (error) {
+          console.error("Erro ao carregar dashboard:", error);
+        }
+      }
+
+      // Renderizar distribuição de cidades
+      function renderizarDistribuicaoCidades(cidades) {
+        const container = document.getElementById("cidadesDistribuicao");
+
+        if (!cidades || cidades.length === 0) {
+          container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--slate-400);">
+            <i data-lucide="map-pin" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+            <p>Sem dados de distribuição por cidade</p>
+          </div>
+        `;
           return;
         }
 
-        document.getElementById('userName').textContent = user.nome;
-        const initials = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        document.getElementById('userAvatar').textContent = initials;
-
-        updateDateTime();
-      } catch (error) {
-        console.error('Erro ao carregar usuário:', error);
-        window.location.href = '../../index.html';
-      }
-    }
-
-    // Carregar dashboard
-    async function loadDashboard() {
-      try {
-        const data = await api.getDashboardResumo();
-
-        // Métricas de Hoje
-        document.getElementById('viagensHoje').textContent = data.viagens_hoje || 0;
-        document.getElementById('passageirosHoje').textContent = data.passageiros_hoje || 0;
-        document.getElementById('faturamentoHoje').textContent =
-          `R$ ${(data.faturamento_hoje || 0).toFixed(2).replace('.', ',')}`;
-
-        const ticketMedio = data.passageiros_hoje > 0 ? data.faturamento_hoje / data.passageiros_hoje : 0;
-        document.getElementById('ticketMedio').textContent =
-          `R$ ${ticketMedio.toFixed(2).replace('.', ',')}`;
-
-        // Métricas da Semana (simulado - ajustar quando backend estiver pronto)
-        document.getElementById('viagensSemana').textContent = data.viagens_semana || (data.viagens_hoje * 5) || 0;
-        document.getElementById('passageirosSemana').textContent = data.passageiros_semana || (data.passageiros_hoje * 5) || 0;
-        document.getElementById('faturamentoSemana').textContent =
-          `R$ ${((data.faturamento_semana || (data.faturamento_hoje * 5)) || 0).toFixed(2).replace('.', ',')}`;
-        document.getElementById('novosClientesSemana').textContent = data.novos_clientes_semana || 8;
-
-        // Trends da semana
-        document.getElementById('viagensSemanaTrend').textContent = '+12%';
-        document.getElementById('passageirosSemanaTrend').textContent = '+8%';
-        document.getElementById('faturamentoSemanaTrend').textContent = '+15%';
-
-        // Métricas do Mês (simulado)
-        document.getElementById('viagensMes').textContent = data.viagens_mes || (data.viagens_hoje * 20) || 0;
-        document.getElementById('passageirosMes').textContent = data.passageiros_mes || (data.passageiros_hoje * 20) || 0;
-        document.getElementById('faturamentoMes').textContent =
-          `R$ ${((data.faturamento_mes || (data.faturamento_hoje * 20)) || 0).toFixed(2).replace('.', ',')}`;
-
-        // Distribuição por cidade
-        renderizarDistribuicaoCidades(data.distribuicao_cidades || [
-          { cidade: 'São Paulo', total: 145, percentual: 35 },
-          { cidade: 'Rio de Janeiro', total: 98, percentual: 24 },
-          { cidade: 'Belo Horizonte', total: 76, percentual: 18 },
-          { cidade: 'Curitiba', total: 54, percentual: 13 },
-          { cidade: 'Salvador', total: 42, percentual: 10 }
-        ]);
-
-        // Últimas viagens
-        renderizarUltimasViagens(data.ultimas_viagens || []);
-
-        // Formas de pagamento
-        renderizarFormasPagamento(data.formas_pagamento || [
-          { forma: 'PIX', total: 156, valor: 7800 },
-          { forma: 'Dinheiro', total: 89, valor: 4450 },
-          { forma: 'Débito', total: 67, valor: 3350 },
-          { forma: 'Crédito', total: 43, valor: 2150 }
-        ]);
-
-        lucide.createIcons();
-      } catch (error) {
-        console.error('Erro ao carregar dashboard:', error);
-      }
-    }
-
-    // Renderizar distribuição de cidades
-    function renderizarDistribuicaoCidades(cidades) {
-      const container = document.getElementById('cidadesDistribuicao');
-      container.innerHTML = cidades.map(cidade => `
+        container.innerHTML = cidades
+          .map(
+            (cidade) => `
         <div style="margin-bottom: 1rem;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
             <span class="text-small" style="font-weight: 600; color: var(--slate-700);">${cidade.cidade}</span>
@@ -431,15 +606,17 @@
             <div style="height: 100%; background: var(--primary-600); width: ${cidade.percentual}%; transition: width 0.5s ease;"></div>
           </div>
         </div>
-      `).join('');
-    }
+      `,
+          )
+          .join("");
+      }
 
-    // Renderizar últimas viagens
-    function renderizarUltimasViagens(viagens) {
-      const tbody = document.getElementById('ultimasViagensTable');
+      // Renderizar últimas viagens
+      function renderizarUltimasViagens(viagens) {
+        const tbody = document.getElementById("ultimasViagensTable");
 
-      if (viagens.length === 0) {
-        tbody.innerHTML = `
+        if (viagens.length === 0) {
+          tbody.innerHTML = `
           <tr>
             <td colspan="5" style="text-align: center; padding: 2rem; color: var(--slate-400);">
               <i data-lucide="inbox" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
@@ -447,57 +624,102 @@
             </td>
           </tr>
         `;
-      } else {
-        tbody.innerHTML = viagens.map(v => `
-          <tr>
-            <td>${new Date(v.data).toLocaleDateString('pt-BR')}</td>
-            <td><strong>${v.horario}</strong></td>
-            <td>${v.motorista}</td>
-            <td><span class="badge badge-info">${v.passageiros}</span></td>
-            <td style="text-align: right; font-weight: 600;">R$ ${v.valor.toFixed(2).replace('.', ',')}</td>
-          </tr>
-        `).join('');
+        } else {
+          tbody.innerHTML = viagens
+            .map((v) => {
+              const valor = parseFloat(v.valor || 0);
+              return `
+            <tr>
+              <td>${new Date(v.data).toLocaleDateString("pt-BR")}</td>
+              <td><strong>${v.horario}</strong></td>
+              <td>${v.motorista}</td>
+              <td><span class="badge badge-info">${v.passageiros}</span></td>
+              <td style="text-align: right; font-weight: 600;">R$ ${valor.toFixed(2).replace(".", ",")}</td>
+            </tr>
+          `;
+            })
+            .join("");
+        }
+
+        lucide.createIcons();
       }
 
-      lucide.createIcons();
-    }
+      // Renderizar formas de pagamento
+      function renderizarFormasPagamento(formas) {
+        const container = document.getElementById("formasPagamento");
 
-    // Renderizar formas de pagamento
-    function renderizarFormasPagamento(formas) {
-      const container = document.getElementById('formasPagamento');
-
-      const cores = {
-        'PIX': { bg: 'var(--primary-50)', color: 'var(--primary-600)' },
-        'Dinheiro': { bg: 'var(--success-50)', color: 'var(--success-600)' },
-        'Débito': { bg: 'var(--warning-50)', color: 'var(--warning-500)' },
-        'Crédito': { bg: 'var(--error-50)', color: 'var(--error-500)' }
-      };
-
-      container.innerHTML = formas.map(forma => {
-        const cor = cores[forma.forma] || { bg: 'var(--slate-50)', color: 'var(--slate-600)' };
-        return `
-          <div style="padding: 1.5rem; background: ${cor.bg}; border-radius: var(--radius-lg); border: 1px solid ${cor.color}20;">
-            <div class="text-tiny" style="color: ${cor.color}; margin-bottom: 0.5rem;">${forma.forma.toUpperCase()}</div>
-            <div class="text-h3" style="color: ${cor.color}; margin-bottom: 0.25rem;">${forma.total}</div>
-            <div class="text-small" style="color: var(--slate-600);">R$ ${forma.valor.toFixed(2).replace('.', ',')}</div>
+        if (!formas || formas.length === 0) {
+          container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--slate-400); grid-column: 1 / -1;">
+            <i data-lucide="credit-card" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+            <p>Sem dados de formas de pagamento</p>
           </div>
         `;
-      }).join('');
-    }
+          return;
+        }
 
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (confirm('Deseja realmente sair?')) {
-        api.logout();
+        // Cores para cada forma de pagamento (case insensitive)
+        const cores = {
+          PIX: {
+            bg: "var(--primary-50)",
+            color: "var(--primary-600)",
+            nome: "PIX",
+          },
+          DINHEIRO: {
+            bg: "var(--success-50)",
+            color: "var(--success-600)",
+            nome: "Dinheiro",
+          },
+          DEBITO: {
+            bg: "var(--warning-50)",
+            color: "var(--warning-500)",
+            nome: "Débito",
+          },
+          CREDITO: {
+            bg: "var(--error-50)",
+            color: "var(--error-500)",
+            nome: "Crédito",
+          },
+          CARTAO: {
+            bg: "var(--warning-50)",
+            color: "var(--warning-500)",
+            nome: "Cartão",
+          },
+        };
+
+        container.innerHTML = formas
+          .map((forma) => {
+            const formaUpper = (forma.forma || "").toUpperCase();
+            const cor = cores[formaUpper] || {
+              bg: "var(--slate-50)",
+              color: "var(--slate-600)",
+              nome: forma.forma,
+            };
+            const valor = parseFloat(forma.valor || 0);
+            return `
+          <div style="padding: 1.5rem; background: ${cor.bg}; border-radius: var(--radius-lg); border: 1px solid ${cor.color}20;">
+            <div class="text-tiny" style="color: ${cor.color}; margin-bottom: 0.5rem;">${cor.nome.toUpperCase()}</div>
+            <div class="text-h3" style="color: ${cor.color}; margin-bottom: 0.25rem;">${forma.total}</div>
+            <div class="text-small" style="color: var(--slate-600);">R$ ${valor.toFixed(2).replace(".", ",")}</div>
+          </div>
+        `;
+          })
+          .join("");
       }
-    });
 
-    // Inicializar
-    loadUserData();
-    loadDashboard();
-    setInterval(updateDateTime, 1000);
-    setInterval(loadDashboard, 60000); // Atualizar a cada 1 minuto
-  </script>
-</body>
+      // Logout
+      document.getElementById("logoutBtn").addEventListener("click", (e) => {
+        e.preventDefault();
+        if (confirm("Deseja realmente sair?")) {
+          api.logout();
+        }
+      });
+
+      // Inicializar
+      loadUserData();
+      loadDashboard();
+      setInterval(updateDateTime, 1000);
+      setInterval(loadDashboard, 60000); // Atualizar a cada 1 minuto
+    </script>
+  </body>
 </html>

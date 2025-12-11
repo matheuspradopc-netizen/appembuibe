@@ -15,6 +15,7 @@ from ..models.viagem import Viagem
 from ..models.motorista import Motorista
 from ..models.proprietario import Proprietario
 from ..models.usuario import Usuario
+from ..models.cliente import Cliente
 from ..utils.security import get_current_user
 
 router = APIRouter()
@@ -29,6 +30,7 @@ class MetricasPeriodo(BaseModel):
 
 class UltimaViagemDashboard(BaseModel):
     """Schema de última viagem no dashboard"""
+    data: date
     horario: time
     motorista: str
     proprietario: str
@@ -53,6 +55,13 @@ class ResumoFormaPagamento(BaseModel):
     percentual: float
 
 
+class DistribuicaoCidade(BaseModel):
+    """Schema de distribuição por cidade"""
+    cidade: str
+    total: int
+    percentual: float
+
+
 class DashboardResumo(BaseModel):
     """Schema do resumo do dashboard"""
     hoje: MetricasPeriodo
@@ -61,14 +70,26 @@ class DashboardResumo(BaseModel):
     ultimas_viagens: List[UltimaViagemDashboard]
     top_motoristas_mes: List[TopMotorista]
     formas_pagamento_hoje: List[ResumoFormaPagamento]
+    # Novos campos para o dashboard admin
+    viagens_hoje: int = 0
+    passageiros_hoje: int = 0
+    faturamento_hoje: Decimal = Decimal('0')
+    viagens_semana: int = 0
+    passageiros_semana: int = 0
+    faturamento_semana: Decimal = Decimal('0')
+    viagens_mes: int = 0
+    passageiros_mes: int = 0
+    faturamento_mes: Decimal = Decimal('0')
+    novos_clientes_semana: int = 0
+    distribuicao_cidades: List[DistribuicaoCidade] = []
+    formas_pagamento: List[ResumoFormaPagamento] = []
 
 
 @router.get("/resumo", response_model=DashboardResumo)
-def dashboard_resumo(
-    data: Optional[date] = Query(None, description="Data de referência (opcional, padrão: hoje)"),
-    db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
-):
+def dashboard_resumo(data: Optional[date] = Query(
+    None, description="Data de referência (opcional, padrão: hoje)"),
+                     db: Session = Depends(get_db),
+                     current_user: Usuario = Depends(get_current_user)):
     """
     Retorna resumo completo para o dashboard
 
@@ -90,122 +111,107 @@ def dashboard_resumo(
         data_ref = data
 
     # Calcula datas dos períodos
-    inicio_semana = data_ref - timedelta(days=data_ref.weekday())  # Segunda-feira
+    inicio_semana = data_ref - timedelta(
+        days=data_ref.weekday())  # Segunda-feira
     inicio_mes = data_ref.replace(day=1)
 
     # Métricas de HOJE
     passagens_hoje = db.query(Passagem).filter(
-        Passagem.data_viagem == data_ref,
-        Passagem.status != "CANCELADA"
-    ).all()
+        Passagem.data_viagem == data_ref, Passagem.status
+        != "CANCELADA").all()
 
-    viagens_hoje = db.query(Viagem).filter(
-        Viagem.data == data_ref
-    ).count()
+    viagens_hoje = db.query(Viagem).filter(Viagem.data == data_ref).count()
 
     metricas_hoje = MetricasPeriodo(
         passageiros=len(passagens_hoje),
-        valor=sum(p.valor for p in passagens_hoje) if passagens_hoje else Decimal('0'),
-        viagens=viagens_hoje
-    )
+        valor=sum(p.valor
+                  for p in passagens_hoje) if passagens_hoje else Decimal('0'),
+        viagens=viagens_hoje)
 
     # Métricas da SEMANA
     passagens_semana = db.query(Passagem).filter(
-        Passagem.data_viagem >= inicio_semana,
-        Passagem.data_viagem <= data_ref,
-        Passagem.status != "CANCELADA"
-    ).all()
+        Passagem.data_viagem >= inicio_semana, Passagem.data_viagem
+        <= data_ref, Passagem.status != "CANCELADA").all()
 
-    viagens_semana = db.query(Viagem).filter(
-        Viagem.data >= inicio_semana,
-        Viagem.data <= data_ref
-    ).count()
+    viagens_semana = db.query(Viagem).filter(Viagem.data >= inicio_semana,
+                                             Viagem.data <= data_ref).count()
 
     metricas_semana = MetricasPeriodo(
         passageiros=len(passagens_semana),
-        valor=sum(p.valor for p in passagens_semana) if passagens_semana else Decimal('0'),
-        viagens=viagens_semana
-    )
+        valor=sum(
+            p.valor
+            for p in passagens_semana) if passagens_semana else Decimal('0'),
+        viagens=viagens_semana)
 
     # Métricas do MÊS
     passagens_mes = db.query(Passagem).filter(
-        Passagem.data_viagem >= inicio_mes,
-        Passagem.data_viagem <= data_ref,
-        Passagem.status != "CANCELADA"
-    ).all()
+        Passagem.data_viagem >= inicio_mes, Passagem.data_viagem <= data_ref,
+        Passagem.status != "CANCELADA").all()
 
-    viagens_mes = db.query(Viagem).filter(
-        Viagem.data >= inicio_mes,
-        Viagem.data <= data_ref
-    ).count()
+    viagens_mes = db.query(Viagem).filter(Viagem.data >= inicio_mes,
+                                          Viagem.data <= data_ref).count()
 
     metricas_mes = MetricasPeriodo(
         passageiros=len(passagens_mes),
-        valor=sum(p.valor for p in passagens_mes) if passagens_mes else Decimal('0'),
-        viagens=viagens_mes
-    )
+        valor=sum(p.valor
+                  for p in passagens_mes) if passagens_mes else Decimal('0'),
+        viagens=viagens_mes)
 
     # Últimas 5 viagens registradas
     ultimas_viagens_db = db.query(Viagem).order_by(
-        Viagem.data.desc(),
-        Viagem.horario.desc()
-    ).limit(5).all()
+        Viagem.data.desc(), Viagem.horario.desc()).limit(5).all()
 
     ultimas_viagens = []
     for viagem in ultimas_viagens_db:
-        motorista = db.query(Motorista).filter(Motorista.id == viagem.motorista_id).first()
+        motorista = db.query(Motorista).filter(
+            Motorista.id == viagem.motorista_id).first()
         proprietario = db.query(Proprietario).filter(
-            Proprietario.id == motorista.proprietario_id
-        ).first()
+            Proprietario.id == motorista.proprietario_id).first()
 
-        ultimas_viagens.append(UltimaViagemDashboard(
-            horario=viagem.horario,
-            motorista=motorista.nome,
-            proprietario=proprietario.nome,
-            passageiros=viagem.total_passageiros,
-            valor=viagem.valor_total
-        ))
+        ultimas_viagens.append(
+            UltimaViagemDashboard(data=viagem.data,
+                                  horario=viagem.horario,
+                                  motorista=motorista.nome,
+                                  proprietario=proprietario.nome,
+                                  passageiros=viagem.total_passageiros,
+                                  valor=viagem.valor_total))
 
     # Top 5 motoristas do mês
     from collections import defaultdict
-    motoristas_stats = defaultdict(lambda: {
-        'total_passageiros': 0,
-        'total_viagens': 0,
-        'valor_total': Decimal('0'),
-        'proprietario': ''
-    })
+    motoristas_stats = defaultdict(
+        lambda: {
+            'total_passageiros': 0,
+            'total_viagens': 0,
+            'valor_total': Decimal('0'),
+            'proprietario': ''
+        })
 
-    viagens_mes_db = db.query(Viagem).filter(
-        Viagem.data >= inicio_mes,
-        Viagem.data <= data_ref
-    ).all()
+    viagens_mes_db = db.query(Viagem).filter(Viagem.data >= inicio_mes,
+                                             Viagem.data <= data_ref).all()
 
     for viagem in viagens_mes_db:
-        motorista = db.query(Motorista).filter(Motorista.id == viagem.motorista_id).first()
+        motorista = db.query(Motorista).filter(
+            Motorista.id == viagem.motorista_id).first()
         proprietario = db.query(Proprietario).filter(
-            Proprietario.id == motorista.proprietario_id
-        ).first()
+            Proprietario.id == motorista.proprietario_id).first()
 
-        motoristas_stats[motorista.nome]['total_passageiros'] += viagem.total_passageiros
+        motoristas_stats[
+            motorista.nome]['total_passageiros'] += viagem.total_passageiros
         motoristas_stats[motorista.nome]['total_viagens'] += 1
         motoristas_stats[motorista.nome]['valor_total'] += viagem.valor_total
         motoristas_stats[motorista.nome]['proprietario'] = proprietario.nome
 
     # Ordena por total de passageiros e pega top 5
-    top_motoristas = sorted(
-        motoristas_stats.items(),
-        key=lambda x: x[1]['total_passageiros'],
-        reverse=True
-    )[:5]
+    top_motoristas = sorted(motoristas_stats.items(),
+                            key=lambda x: x[1]['total_passageiros'],
+                            reverse=True)[:5]
 
     top_motoristas_list = [
-        TopMotorista(
-            motorista=nome,
-            proprietario=stats['proprietario'],
-            total_passageiros=stats['total_passageiros'],
-            total_viagens=stats['total_viagens'],
-            valor_total=stats['valor_total']
-        )
+        TopMotorista(motorista=nome,
+                     proprietario=stats['proprietario'],
+                     total_passageiros=stats['total_passageiros'],
+                     total_viagens=stats['total_viagens'],
+                     valor_total=stats['valor_total'])
         for nome, stats in top_motoristas
     ]
 
@@ -220,16 +226,60 @@ def dashboard_resumo(
     formas_pagamento = []
 
     for forma, stats in formas_stats.items():
-        percentual = (stats['total'] / total_passagens_hoje * 100) if total_passagens_hoje > 0 else 0
-        formas_pagamento.append(ResumoFormaPagamento(
-            forma=forma,
-            total=stats['total'],
-            valor=stats['valor'],
-            percentual=round(percentual, 2)
-        ))
+        percentual = (stats['total'] / total_passagens_hoje *
+                      100) if total_passagens_hoje > 0 else 0
+        formas_pagamento.append(
+            ResumoFormaPagamento(forma=forma,
+                                 total=stats['total'],
+                                 valor=stats['valor'],
+                                 percentual=round(percentual, 2)))
 
     # Ordena por total
     formas_pagamento.sort(key=lambda x: x.total, reverse=True)
+
+    # === NOVOS CÁLCULOS PARA O DASHBOARD ADMIN ===
+
+    # Novos clientes da semana
+    novos_clientes_semana = db.query(Cliente).filter(
+        Cliente.created_at >= datetime.combine(inicio_semana, time.min),
+        Cliente.created_at <= datetime.combine(data_ref, time.max)).count()
+
+    # Distribuição por cidade (baseado nos passageiros do mês)
+    cidades_stats = defaultdict(lambda: 0)
+    for passagem in passagens_mes:
+        cliente = db.query(Cliente).filter(
+            Cliente.id == passagem.cliente_id).first()
+        if cliente and cliente.cidade:
+            cidades_stats[cliente.cidade] += 1
+
+    total_passageiros_mes = len(passagens_mes)
+    distribuicao_cidades = []
+    for cidade, total in sorted(cidades_stats.items(),
+                                key=lambda x: x[1],
+                                reverse=True)[:5]:
+        percentual = (total / total_passageiros_mes *
+                      100) if total_passageiros_mes > 0 else 0
+        distribuicao_cidades.append(
+            DistribuicaoCidade(cidade=cidade,
+                               total=total,
+                               percentual=round(percentual, 1)))
+
+    # Formas de pagamento do mês (não só hoje)
+    formas_stats_mes = defaultdict(lambda: {'total': 0, 'valor': Decimal('0')})
+    for passagem in passagens_mes:
+        formas_stats_mes[passagem.forma_pagamento]['total'] += 1
+        formas_stats_mes[passagem.forma_pagamento]['valor'] += passagem.valor
+
+    formas_pagamento_mes = []
+    for forma, stats in formas_stats_mes.items():
+        percentual = (stats['total'] / total_passageiros_mes *
+                      100) if total_passageiros_mes > 0 else 0
+        formas_pagamento_mes.append(
+            ResumoFormaPagamento(forma=forma,
+                                 total=stats['total'],
+                                 valor=stats['valor'],
+                                 percentual=round(percentual, 2)))
+    formas_pagamento_mes.sort(key=lambda x: x.total, reverse=True)
 
     return DashboardResumo(
         hoje=metricas_hoje,
@@ -237,15 +287,25 @@ def dashboard_resumo(
         mes=metricas_mes,
         ultimas_viagens=ultimas_viagens,
         top_motoristas_mes=top_motoristas_list,
-        formas_pagamento_hoje=formas_pagamento
-    )
+        formas_pagamento_hoje=formas_pagamento,
+        # Novos campos diretos para o frontend
+        viagens_hoje=viagens_hoje,
+        passageiros_hoje=len(passagens_hoje),
+        faturamento_hoje=metricas_hoje.valor,
+        viagens_semana=viagens_semana,
+        passageiros_semana=len(passagens_semana),
+        faturamento_semana=metricas_semana.valor,
+        viagens_mes=viagens_mes,
+        passageiros_mes=len(passagens_mes),
+        faturamento_mes=metricas_mes.valor,
+        novos_clientes_semana=novos_clientes_semana,
+        distribuicao_cidades=distribuicao_cidades,
+        formas_pagamento=formas_pagamento_mes)
 
 
 @router.get("/metricas-rapidas")
-def metricas_rapidas(
-    db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
-):
+def metricas_rapidas(db: Session = Depends(get_db),
+                     current_user: Usuario = Depends(get_current_user)):
     """
     Retorna métricas rápidas para atualização em tempo real
 
@@ -259,23 +319,20 @@ def metricas_rapidas(
     hoje = datetime.now().date()
 
     # Passagens do dia
-    passagens_hoje = db.query(Passagem).filter(
-        Passagem.data_viagem == hoje,
-        Passagem.status != "CANCELADA"
-    ).count()
+    passagens_hoje = db.query(Passagem).filter(Passagem.data_viagem == hoje,
+                                               Passagem.status
+                                               != "CANCELADA").count()
 
     # Viagens registradas hoje
-    viagens_hoje = db.query(Viagem).filter(
-        Viagem.data == hoje
-    ).count()
+    viagens_hoje = db.query(Viagem).filter(Viagem.data == hoje).count()
 
     # Valor total do dia
-    passagens = db.query(Passagem).filter(
-        Passagem.data_viagem == hoje,
-        Passagem.status != "CANCELADA"
-    ).all()
+    passagens = db.query(Passagem).filter(Passagem.data_viagem == hoje,
+                                          Passagem.status
+                                          != "CANCELADA").all()
 
-    valor_total = sum(p.valor for p in passagens) if passagens else Decimal('0')
+    valor_total = sum(p.valor
+                      for p in passagens) if passagens else Decimal('0')
 
     return {
         "passagens": passagens_hoje,
