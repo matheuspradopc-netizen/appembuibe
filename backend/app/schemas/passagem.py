@@ -16,6 +16,7 @@ class PassagemBase(BaseModel):
     horario: time = Field(..., description="Horário da viagem (HH:MM)")
     data_viagem: date = Field(..., description="Data da viagem (YYYY-MM-DD)")
     forma_pagamento: str = Field(..., description="Forma de pagamento: DINHEIRO, CARTAO ou PIX")
+    endereco_embarque: Optional[str] = Field(None, description="Endereço onde a van vai buscar o passageiro")
 
 
 class PassagemCreate(PassagemBase):
@@ -32,6 +33,7 @@ class PassagemResponse(PassagemBase):
     data_emissao: datetime
     atendente_id: int
     created_at: datetime
+    endereco_embarque: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -55,6 +57,7 @@ class PassagemDetalhada(BaseModel):
     # Dados do local
     cidade: str
     local_embarque: str
+    endereco_embarque: Optional[str] = None  # Endereço específico de busca
 
     # Dados do motorista
     motorista_nome: str
@@ -62,6 +65,11 @@ class PassagemDetalhada(BaseModel):
 
     # Dados do atendente
     atendente_nome: str
+    
+    # Dados de alteração (cancelamento/transferência)
+    data_original: Optional[date] = None
+    horario_original: Optional[time] = None
+    motivo_alteracao: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -82,6 +90,37 @@ class PassagemListItem(BaseModel):
     horario: time
     valor: Decimal
     status: str
+
+    class Config:
+        from_attributes = True
+
+
+# ==================== CANCELAMENTO E TRANSFERÊNCIA ====================
+
+class PassagemCancelar(BaseModel):
+    """Schema para cancelamento de passagem"""
+    motivo: Optional[str] = Field(None, description="Motivo do cancelamento")
+
+
+class PassagemTransferir(BaseModel):
+    """Schema para transferência de passagem"""
+    nova_data: date = Field(..., description="Nova data da viagem")
+    novo_horario: time = Field(..., description="Novo horário da viagem")
+    novo_motorista_id: int = Field(..., description="ID do novo motorista")
+    motivo: Optional[str] = Field(None, description="Motivo da transferência")
+
+
+class PassagemAlteradaResponse(BaseModel):
+    """Schema de resposta após alteração (cancelamento/transferência)"""
+    id: int
+    numero: int
+    status: str
+    data_viagem: date
+    horario: time
+    data_original: Optional[date]
+    horario_original: Optional[time]
+    motivo_alteracao: Optional[str]
+    mensagem: str
 
     class Config:
         from_attributes = True
