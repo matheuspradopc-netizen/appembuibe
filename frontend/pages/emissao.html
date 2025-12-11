@@ -378,6 +378,23 @@
                   </select>
                 </div>
 
+                <!-- Endereço de Embarque (onde buscar o passageiro) -->
+                <div class="form-group">
+                  <label class="form-label">Endereço de Busca</label>
+                  <div style="position: relative;">
+                    <input
+                      type="text"
+                      class="form-input"
+                      id="enderecoEmbarque"
+                      placeholder="Endereço onde a van vai buscar o passageiro..."
+                    />
+                    <small class="form-hint" style="color: var(--slate-500); margin-top: 0.25rem; display: block;">
+                      <i data-lucide="info" style="width: 12px; height: 12px; display: inline; vertical-align: middle;"></i>
+                      Preenchido automaticamente com endereço do cliente. Altere se necessário.
+                    </small>
+                  </div>
+                </div>
+
                 <!-- Motorista -->
                 <div class="form-group">
                   <label class="form-label form-label-required">Motorista</label>
@@ -461,6 +478,11 @@
                   <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
                     <span class="text-small" style="color: var(--slate-500);">Local de Embarque</span>
                     <strong class="text-small" id="previewEmbarque">-</strong>
+                  </div>
+
+                  <div id="previewEnderecoContainer" style="display: none; padding: 0.75rem; background: var(--slate-100); border-radius: var(--radius-md);">
+                    <span class="text-tiny" style="color: var(--slate-500); display: block; margin-bottom: 0.25rem;">📍 Buscar em:</span>
+                    <strong class="text-small" id="previewEndereco" style="color: var(--slate-700); word-break: break-word;">-</strong>
                   </div>
 
                   <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--primary-50); border-radius: var(--radius-md); border: 1px solid var(--primary-200);">
@@ -585,6 +607,11 @@
             <span class="info-value" id="msgLocal">-</span>
           </div>
 
+          <div class="info-row" id="msgEnderecoRow" style="display: none; background: var(--slate-100);">
+            <span class="info-label">📍 Buscar em:</span>
+            <span class="info-value" id="msgEndereco" style="font-size: 12px;">-</span>
+          </div>
+
           <div class="info-row" style="background: var(--primary-50); border: 1px solid var(--primary-200);">
             <span class="info-label" style="color: var(--primary-700);">Destino:</span>
             <span class="info-value" style="color: var(--primary-700); font-weight: 600;">Embu das Artes</span>
@@ -695,12 +722,30 @@
             return;
           }
 
-          dropdown.innerHTML = clientes.map(cliente => `
-            <div class="autocomplete-item" onclick="selecionarCliente(${cliente.id}, '${cliente.nome.replace(/'/g, "\\'")}', '${cliente.telefone}')">
-              <div class="autocomplete-item-name">${cliente.nome}</div>
-              <div class="autocomplete-item-info">${cliente.telefone} • ${cliente.cidade || 'N/A'}</div>
-            </div>
-          `).join('');
+          dropdown.innerHTML = clientes.map(cliente => {
+            // Monta endereço completo para passar na função
+            const enderecoParts = [];
+            if (cliente.endereco) enderecoParts.push(cliente.endereco);
+            if (cliente.bairro) enderecoParts.push(cliente.bairro);
+            if (cliente.cidade) enderecoParts.push(cliente.cidade);
+            const enderecoCompleto = enderecoParts.join(', ');
+            
+            // Escapa aspas para o onclick
+            const dadosCliente = JSON.stringify({
+              id: cliente.id,
+              nome: cliente.nome,
+              telefone: cliente.telefone,
+              endereco: enderecoCompleto
+            }).replace(/"/g, '&quot;');
+            
+            return `
+              <div class="autocomplete-item" onclick='selecionarClienteObj(${dadosCliente})'>
+                <div class="autocomplete-item-name">${cliente.nome}</div>
+                <div class="autocomplete-item-info">${cliente.telefone} • ${cliente.cidade || 'N/A'}</div>
+                ${enderecoCompleto ? `<div class="autocomplete-item-endereco" style="font-size: 11px; color: var(--slate-400); margin-top: 2px;">${enderecoCompleto}</div>` : ''}
+              </div>
+            `;
+          }).join('');
         } catch (error) {
           console.error('Erro ao buscar clientes:', error);
           dropdown.innerHTML = '<div class="autocomplete-empty">Erro ao buscar clientes</div>';
@@ -715,20 +760,39 @@
       }
     });
 
-    // Função para selecionar cliente
-    window.selecionarCliente = function(id, nome, telefone) {
-      clienteSelecionadoAtual = { id, nome, telefone };
-      clienteIdInput.value = id;
+    // Função para selecionar cliente (nova versão com objeto)
+    window.selecionarClienteObj = function(clienteData) {
+      // Converte se vier como string (do HTML)
+      const cliente = typeof clienteData === 'string' ? JSON.parse(clienteData) : clienteData;
+      
+      clienteSelecionadoAtual = { 
+        id: cliente.id, 
+        nome: cliente.nome, 
+        telefone: cliente.telefone,
+        endereco: cliente.endereco 
+      };
+      clienteIdInput.value = cliente.id;
       inputBusca.value = '';
       inputBusca.style.display = 'none';
       dropdown.style.display = 'none';
 
       // Mostra cliente selecionado
-      document.getElementById('clienteSelecionadoNome').textContent = `${nome} - ${telefone}`;
+      document.getElementById('clienteSelecionadoNome').textContent = `${cliente.nome} - ${cliente.telefone}`;
       document.getElementById('clienteSelecionado').style.display = 'flex';
+
+      // Preenche endereço de embarque automaticamente
+      const enderecoInput = document.getElementById('enderecoEmbarque');
+      if (cliente.endereco && enderecoInput) {
+        enderecoInput.value = cliente.endereco;
+      }
 
       lucide.createIcons();
       atualizarPreview();
+    }
+
+    // Função legada para compatibilidade
+    window.selecionarCliente = function(id, nome, telefone) {
+      selecionarClienteObj({ id, nome, telefone, endereco: '' });
     }
 
     // Função para limpar cliente selecionado
@@ -738,6 +802,7 @@
       inputBusca.value = '';
       inputBusca.style.display = 'block';
       document.getElementById('clienteSelecionado').style.display = 'none';
+      document.getElementById('enderecoEmbarque').value = '';
       inputBusca.focus();
     }
 
@@ -814,6 +879,16 @@
       const localText = localSelect.options[localSelect.selectedIndex]?.text || '-';
       document.getElementById('previewEmbarque').textContent = localId ? localText : '-';
 
+      // Endereço de busca
+      const enderecoEmbarque = document.getElementById('enderecoEmbarque').value;
+      const previewEnderecoContainer = document.getElementById('previewEnderecoContainer');
+      if (enderecoEmbarque) {
+        document.getElementById('previewEndereco').textContent = enderecoEmbarque;
+        previewEnderecoContainer.style.display = 'block';
+      } else {
+        previewEnderecoContainer.style.display = 'none';
+      }
+
       const motoristaId = document.getElementById('motoristaId').value;
       const motorista = motoristas.find(m => m.id == motoristaId);
       document.getElementById('previewMotorista').textContent = motorista ? motorista.nome : '-';
@@ -870,6 +945,7 @@
           local_embarque_id: parseInt(document.getElementById('localEmbarqueId').value),
           motorista_id: parseInt(document.getElementById('motoristaId').value),
           forma_pagamento: document.getElementById('formaPagamento').value,
+          endereco_embarque: document.getElementById('enderecoEmbarque').value || null,
           observacoes: document.getElementById('observacoes').value || null
         };
 
@@ -898,6 +974,7 @@
         // Preparar dados da passagem
         const numeroPassagem = resultado.passagem ? resultado.passagem.numero : resultado.id;
         const valorPassagem = resultado.passagem ? resultado.passagem.valor : 0;
+        const enderecoEmbarque = document.getElementById('enderecoEmbarque').value;
 
         const dadosPassagem = {
           numero: String(numeroPassagem).padStart(6, '0'),
@@ -906,6 +983,7 @@
           horario: dados.horario,
           origem: cidadeNome,
           local: localNome,
+          endereco_embarque: enderecoEmbarque || null,
           motorista: motoristaNome,
           valor: Number(valorPassagem).toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
           pagamento: dados.forma_pagamento,
@@ -938,6 +1016,16 @@
       document.getElementById('emissaoForm').reset();
       const hoje = new Date().toISOString().split('T')[0];
       document.getElementById('dataViagem').value = hoje;
+      
+      // Limpar cliente selecionado
+      limparClienteSelecionado();
+      
+      // Limpar endereço de embarque
+      document.getElementById('enderecoEmbarque').value = '';
+      
+      // Resetar selects
+      document.getElementById('localEmbarqueId').innerHTML = '<option value="">Selecione a cidade primeiro</option>';
+      
       atualizarPreview();
     }
 
@@ -986,8 +1074,20 @@
 
         const clienteCriado = await api.createCliente(novoCliente);
 
-        // Seleciona o cliente recém-criado
-        selecionarCliente(clienteCriado.id, clienteCriado.nome, clienteCriado.telefone);
+        // Monta endereço completo
+        const enderecoParts = [];
+        if (novoCliente.endereco) enderecoParts.push(novoCliente.endereco);
+        if (novoCliente.bairro) enderecoParts.push(novoCliente.bairro);
+        if (novoCliente.cidade) enderecoParts.push(novoCliente.cidade);
+        const enderecoCompleto = enderecoParts.join(', ');
+
+        // Seleciona o cliente recém-criado com endereço
+        selecionarClienteObj({
+          id: clienteCriado.id, 
+          nome: clienteCriado.nome, 
+          telefone: clienteCriado.telefone,
+          endereco: enderecoCompleto
+        });
 
         // Fecha o modal
         fecharModalNovoCliente();

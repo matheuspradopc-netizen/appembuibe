@@ -222,6 +222,11 @@
             <span class="info-value" id="msgLocal">-</span>
           </div>
 
+          <div class="info-row" id="enderecoRow" style="display: none; background: var(--slate-100);">
+            <span class="info-label">📍 Buscar em:</span>
+            <span class="info-value" id="msgEndereco" style="font-size: 13px;">-</span>
+          </div>
+
           <div class="info-row highlight">
             <span class="info-label">Destino:</span>
             <span class="info-value">Embu das Artes</span>
@@ -294,6 +299,13 @@
         document.getElementById('msgHorario').textContent = dados.horario;
         document.getElementById('msgOrigem').textContent = dados.origem;
         document.getElementById('msgLocal').textContent = dados.local;
+        
+        // Endereço de embarque (onde buscar)
+        if (dados.endereco_embarque) {
+          document.getElementById('msgEndereco').textContent = dados.endereco_embarque;
+          document.getElementById('enderecoRow').style.display = 'flex';
+        }
+        
         document.getElementById('msgMotorista').textContent = dados.motorista;
         document.getElementById('msgValor').textContent = `R$ ${dados.valor}`;
         document.getElementById('msgPagamento').textContent = dados.pagamento;
