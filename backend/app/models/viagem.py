@@ -2,7 +2,7 @@
 Model de Viagens - Expresso Embuibe
 Gerencia registro de saída das viagens
 """
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, Numeric, Date, Time, String
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, Numeric, Date, Time, String, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from ..database import Base
@@ -10,6 +10,9 @@ from ..database import Base
 
 class Viagem(Base):
     __tablename__ = "viagens"
+    __table_args__ = (
+        UniqueConstraint('data', 'horario', 'motorista_id', name='uix_viagem_data_horario_motorista'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     data = Column(Date, nullable=False, index=True)

@@ -384,7 +384,8 @@ def confirmar_saida(
     """
     Confirma a saída de uma viagem
 
-    Marca a viagem como "SAIU" e registra data/hora de saída.
+    Marca a viagem como "SAIU", registra data/hora de saída, atualiza
+    o status das passagens para UTILIZADA e gera PDF do manifesto.
 
     Args:
         dados: Dados da viagem (data, horário, motorista)
@@ -392,13 +393,15 @@ def confirmar_saida(
         current_user: Usuário autenticado
 
     Returns:
-        Dados da viagem confirmada
+        Dados da viagem confirmada com PDF do manifesto
 
     Raises:
         HTTPException 404: Se viagem não for encontrada
         HTTPException 400: Se viagem já foi confirmada
     """
     from datetime import datetime
+    from ..services.pdf_service import pdf_service
+    from ..models.cidade import Cidade
 
     # Busca a viagem
     viagem = db.query(Viagem).filter(
@@ -423,6 +426,30 @@ def confirmar_saida(
     viagem.status = "SAIU"
     viagem.data_saida = datetime.now()
 
+    # Buscar e atualizar status das passagens para UTILIZADA
+    passagens = db.query(Passagem).filter(
+        Passagem.data_viagem == dados.data,
+        Passagem.horario == dados.horario,
+        Passagem.motorista_id == dados.motorista_id,
+        Passagem.status == "EMITIDA"
+    ).all()
+
+    # Preparar lista de passageiros para o manifesto
+    passageiros_lista = []
+    for passagem in passagens:
+        passagem.status = "UTILIZADA"
+        cliente = db.query(Cliente).filter(Cliente.id == passagem.cliente_id).first()
+        local = db.query(LocalEmbarque).filter(LocalEmbarque.id == passagem.local_embarque_id).first()
+        cidade = db.query(Cidade).filter(Cidade.id == local.cidade_id).first() if local else None
+
+        passageiros_lista.append({
+            "numero_passagem": passagem.numero,
+            "cliente_nome": cliente.nome if cliente else "N/A",
+            "cidade": cidade.nome if cidade else "N/A",
+            "local_embarque": local.nome if local else "N/A",
+            "valor": float(passagem.valor) if passagem.valor else 0
+        })
+
     db.commit()
     db.refresh(viagem)
 
@@ -432,16 +459,31 @@ def confirmar_saida(
         Proprietario.id == motorista.proprietario_id
     ).first()
 
+    # Gerar PDF do manifesto
+    pdf_base64 = pdf_service.gerar_manifesto_viagem_pdf(
+        numero_viagem=viagem.id,
+        data_viagem=viagem.data.strftime("%d/%m/%Y"),
+        horario_programado=viagem.horario.strftime("%H:%M"),
+        horario_saida=viagem.data_saida.strftime("%H:%M"),
+        motorista_nome=motorista.nome,
+        proprietario_nome=proprietario.nome if proprietario else "N/A",
+        passageiros=passageiros_lista,
+        total_passageiros=viagem.total_passageiros,
+        valor_total=viagem.valor_total
+    )
+
     return {
         "mensagem": "Saída registrada com sucesso!",
         "viagem": {
             "id": viagem.id,
+            "data": viagem.data.strftime("%d/%m/%Y"),
             "horario": viagem.horario.strftime("%H:%M"),
             "motorista": motorista.nome,
-            "proprietario": proprietario.nome,
+            "proprietario": proprietario.nome if proprietario else "N/A",
             "passageiros": viagem.total_passageiros,
             "valor": float(viagem.valor_total),
-            "data_saida": viagem.data_saida.isoformat(),
+            "data_saida": viagem.data_saida.strftime("%d/%m/%Y %H:%M"),
             "status": viagem.status
-        }
+        },
+        "pdf_base64": pdf_base64
     }
