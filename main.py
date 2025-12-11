@@ -1,6 +1,5 @@
-def main():
-    print("Hello from repl-nix-workspace!")
-
+import uvicorn
+from backend.main import app  # ajusta o import conforme tua estrutura
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host="0.0.0.0", port=5000)
