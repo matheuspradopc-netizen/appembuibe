@@ -43,22 +43,22 @@ class LocalEmbarqueResponse(BaseModel):
         from_attributes = True
 
 
+class ProprietarioSimples(BaseModel):
+    """Schema simplificado de proprietário"""
+    id: int
+    nome: str
+
+    class Config:
+        from_attributes = True
+
+
 class MotoristaResponse(BaseModel):
     """Schema de resposta de motorista"""
     id: int
     nome: str
     vagas: int
     ativo: bool
-    proprietario: "ProprietarioSimples"
-
-    class Config:
-        from_attributes = True
-
-
-class ProprietarioSimples(BaseModel):
-    """Schema simplificado de proprietário"""
-    id: int
-    nome: str
+    proprietario: ProprietarioSimples
 
     class Config:
         from_attributes = True

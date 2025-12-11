@@ -101,3 +101,7 @@ class RelatorioMotorista(BaseModel):
     total_viagens: int
     total_passageiros: int
     valor_total: Decimal
+
+
+# Rebuild models to resolve forward references
+RelatorioPeriodo.model_rebuild()
