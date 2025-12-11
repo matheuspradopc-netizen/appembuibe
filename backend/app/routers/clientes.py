@@ -65,10 +65,9 @@ def listar_clientes(
     # Calcula total de páginas
     total_pages = math.ceil(total / limit)
 
-    # Aplica paginação e ordenação alfabética (A-Z, caracteres especiais por último)
-    # COLLATE NOCASE garante ordenação case-insensitive
+    # Aplica paginação e ordenação alfabética
     offset = (page - 1) * limit
-    clientes = query.order_by(Cliente.nome.collate('NOCASE')).offset(offset).limit(limit).all()
+    clientes = query.order_by(Cliente.nome).offset(offset).limit(limit).all()
 
     return ClientePaginatedResponse(
         items=[ClienteListItem.model_validate(c) for c in clientes],
@@ -239,3 +238,5 @@ def desativar_cliente(
     db.commit()
 
     return None
+
+
