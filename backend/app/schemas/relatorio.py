@@ -55,18 +55,6 @@ class PassagemPeriodo(BaseModel):
     forma_pagamento: str
 
 
-class RelatorioPeriodo(BaseModel):
-    """Schema do relatório por período"""
-    data_inicio: date
-    data_fim: date
-    passagens: List[PassagemPeriodo]
-    total_passagens: int
-    total_passageiros: int
-    valor_total: Decimal
-    resumo_por_motorista: List['ResumoMotorista']
-    resumo_por_forma_pagamento: List['ResumoFormaPagamento']
-
-
 class ResumoMotorista(BaseModel):
     """Schema de resumo por motorista"""
     motorista_nome: str
@@ -80,6 +68,18 @@ class ResumoFormaPagamento(BaseModel):
     forma_pagamento: str
     total_passagens: int
     valor_total: Decimal
+
+
+class RelatorioPeriodo(BaseModel):
+    """Schema do relatório por período"""
+    data_inicio: date
+    data_fim: date
+    passagens: List[PassagemPeriodo]
+    total_passagens: int
+    total_passageiros: int
+    valor_total: Decimal
+    resumo_por_motorista: List[ResumoMotorista]
+    resumo_por_forma_pagamento: List[ResumoFormaPagamento]
 
 
 class ViagemMotorista(BaseModel):
