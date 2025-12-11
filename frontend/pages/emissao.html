@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emissão de Passagem - Expresso Embuibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Autocomplete Dropdown */
+    .autocomplete-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      margin-top: 0.25rem;
+    }
+
+    .autocomplete-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--slate-100);
+      transition: background-color 0.2s;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .autocomplete-item:hover {
+      background-color: var(--primary-50);
+    }
+
+    .autocomplete-item-name {
+      font-weight: 600;
+      color: var(--slate-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .autocomplete-item-info {
+      font-size: 0.875rem;
+      color: var(--slate-600);
+    }
+
+    .autocomplete-empty {
+      padding: 1rem;
+      text-align: center;
+      color: var(--slate-500);
+      font-size: 0.875rem;
+    }
+
+    .autocomplete-loading {
+      padding: 1rem;
+      text-align: center;
+      color: var(--primary-600);
+      font-size: 0.875rem;
+    }
+
+    .cliente-selecionado {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: var(--primary-50);
+      border: 1px solid var(--primary-200);
+      border-radius: var(--radius-md);
+      margin-top: 0.5rem;
+    }
+
+    .cliente-selecionado span {
+      font-weight: 600;
+      color: var(--primary-900);
+    }
+
+    .btn-remove-cliente {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+      color: var(--primary-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+
+    .btn-remove-cliente:hover {
+      background: var(--primary-100);
+      color: var(--primary-700);
+    }
+
+    .btn-remove-cliente svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Modal de Passagem */
+    .modal-passagem {
+      max-width: 500px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .passagem-header {
+      background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .passagem-header h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .passagem-numero {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+    }
+
+    .passagem-body {
+      padding: 1.5rem;
+      background: white;
+    }
+
+    .passagem-info-card {
+      background: var(--slate-50);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      border: 2px solid var(--slate-200);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-row.highlight {
+      background: var(--primary-50);
+      margin: 0.5rem -0.5rem;
+      padding: 0.75rem 0.5rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--primary-200);
+    }
+
+    .info-row.small {
+      font-size: 0.875rem;
+      color: var(--slate-600);
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+      border-top: 1px solid var(--slate-300);
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: var(--slate-700);
+    }
+
+    .info-value {
+      color: var(--slate-900);
+      font-weight: 500;
+      text-align: right;
+    }
+
+    .info-row.highlight .info-value {
+      color: var(--primary-700);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .passagem-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      padding: 1rem;
+      background: var(--primary-50);
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--primary-300);
+    }
+
+    .passagem-footer p {
+      margin: 0.25rem 0;
+      font-size: 0.875rem;
+      color: var(--slate-700);
+    }
+
+    .footer-empresa {
+      font-weight: 600;
+      color: var(--primary-700);
+      font-size: 1rem !important;
+      margin-top: 0.5rem !important;
+    }
+
+    .passagem-actions {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      background: var(--slate-50);
+      border-top: 1px solid var(--slate-200);
+    }
+
+    .passagem-actions button {
+      flex: 1;
+    }
+
+    /* Print styles */
+    @media print {
+      .passagem-actions {
+        display: none;
+      }
+
+      .modal-passagem {
+        box-shadow: none;
+        border: 1px solid #000;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="bus"></i>
+        </div>
+        <span class="sidebar-logo-text">Expresso Embuibe</span>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-section">
+          <div class="menu-section-title">Menu Principal</div>
+          <a href="dashboard.html" class="menu-item">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="emissao.html" class="menu-item active">
+            <i data-lucide="ticket"></i>
+            <span>Emitir Passagem</span>
+          </a>
+          <a href="clientes.html" class="menu-item">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="relatorio.html" class="menu-item">
+            <i data-lucide="file-text"></i>
+            <span>Relatório Diário</span>
+          </a>
+          <a href="registro-saida.html" class="menu-item">
+            <i data-lucide="log-out"></i>
+            <span>Registro de Saída</span>
+          </a>
+        </div>
+
+        <div class="menu-section">
+          <div class="menu-section-title">Sistema</div>
+          <a href="#" class="menu-item" id="logoutBtn">
+            <i data-lucide="power"></i>
+            <span>Sair</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="userAvatar">U</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="userName">Carregando...</div>
+            <div class="sidebar-user-role">Atendente</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <header class="header">
+        <h1 class="header-title">Emissão de Passagem</h1>
+        <div class="header-actions">
+          <a href="dashboard.html" class="btn btn-ghost">
+            <i data-lucide="arrow-left"></i>
+            <span>Voltar</span>
+          </a>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="grid-2 animate-fade-in" style="gap: 1.5rem;">
+          <!-- FORMULÁRIO -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Dados da Passagem</h2>
+                <p class="card-subtitle">Preencha os dados do passageiro e da viagem</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <form id="emissaoForm">
+                <!-- Cliente com Busca -->
+                <div class="form-group">
+                  <label class="form-label form-label-required">Cliente</label>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <div style="flex: 1; position: relative;">
+                      <input
+                        type="text"
+                        class="form-input"
+                        id="clienteBusca"
+                        placeholder="Digite o nome ou telefone do cliente..."
+                        autocomplete="off"
+                      />
+                      <input type="hidden" id="clienteId" />
+                      <div id="clienteDropdown" class="autocomplete-dropdown" style="display: none;"></div>
+                      <div id="clienteSelecionado" class="cliente-selecionado" style="display: none;">
+                        <span id="clienteSelecionadoNome"></span>
+                        <button type="button" class="btn-remove-cliente" onclick="limparClienteSelecionado()">
+                          <i data-lucide="x"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="abrirModalNovoCliente()">
+                      <i data-lucide="user-plus"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Data e Horário -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group">
+                    <label class="form-label form-label-required">Data da Viagem</label>
+                    <input type="date" class="form-input" id="dataViagem" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label form-label-required">Horário</label>
+                    <select class="form-select" id="horario" required>
+                      <option value="">Selecione</option>
+                      <option value="06:00">06:00</option>
+                      <option value="08:00">08:00</option>
+                      <option value="10:00">10:00</option>
+                      <option value="12:00">12:00</option>
+                      <option value="14:00">14:00</option>
+                      <option value="16:00">16:00</option>
+                      <option value="18:00">18:00</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Cidade -->
+                <div class="form-group">
+                  <label class="form-label form-label-required">Cidade</label>
+                  <select class="form-select" id="cidadeId" required onchange="carregarLocais()">
+                    <option value="">Selecione a cidade</option>
+                  </select>
+                </div>
+
+                <!-- Local de Embarque -->
+                <div class="form-group">
+                  <label class="form-label form-label-required">Local de Embarque</label>
+                  <select class="form-select" id="localEmbarqueId" required>
+                    <option value="">Selecione a cidade primeiro</option>
+                  </select>
+                </div>
+
+                <!-- Motorista -->
+                <div class="form-group">
+                  <label class="form-label form-label-required">Motorista</label>
+                  <select class="form-select" id="motoristaId" required>
+                    <option value="">Selecione o motorista</option>
+                  </select>
+                </div>
+
+                <!-- Forma de Pagamento -->
+                <div class="form-group">
+                  <label class="form-label form-label-required">Forma de Pagamento</label>
+                  <select class="form-select" id="formaPagamento" required>
+                    <option value="">Selecione</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Débito">Cartão de Débito</option>
+                    <option value="Crédito">Cartão de Crédito</option>
+                  </select>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-group">
+                  <label class="form-label">Observações</label>
+                  <textarea class="form-textarea" id="observacoes" placeholder="Informações adicionais (opcional)" rows="3"></textarea>
+                </div>
+
+                <!-- Botões -->
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                  <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" style="flex: 1;">
+                    <i data-lucide="check-circle"></i>
+                    <span>Emitir Passagem</span>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-lg" onclick="limparFormulario()">
+                    <i data-lucide="x"></i>
+                    <span>Limpar</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- PREVIEW -->
+          <div class="card animate-slide-up stagger-2">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Preview da Passagem</h2>
+                <p class="card-subtitle">Visualização dos dados preenchidos</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div style="border: 2px dashed var(--slate-200); border-radius: var(--radius-lg); padding: 1.5rem; background: var(--slate-50);">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                  <div style="width: 64px; height: 64px; background: var(--primary-600); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white;">
+                    <i data-lucide="ticket" style="width: 32px; height: 32px;"></i>
+                  </div>
+                  <h3 class="text-h3" style="color: var(--slate-800);">Expresso Embuibe</h3>
+                  <p class="text-small" style="color: var(--slate-500);">Passagem Van</p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
+                    <span class="text-small" style="color: var(--slate-500);">Passageiro</span>
+                    <strong class="text-small" id="previewCliente">-</strong>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
+                    <span class="text-small" style="color: var(--slate-500);">Data</span>
+                    <strong class="text-small" id="previewData">-</strong>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
+                    <span class="text-small" style="color: var(--slate-500);">Horário</span>
+                    <strong class="text-small" id="previewHorario">-</strong>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
+                    <span class="text-small" style="color: var(--slate-500);">Origem</span>
+                    <strong class="text-small" id="previewCidade">-</strong>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
+                    <span class="text-small" style="color: var(--slate-500);">Local de Embarque</span>
+                    <strong class="text-small" id="previewEmbarque">-</strong>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--primary-50); border-radius: var(--radius-md); border: 1px solid var(--primary-200);">
+                    <span class="text-small" style="color: var(--primary-700); font-weight: 600;">Destino</span>
+                    <strong class="text-small" style="color: var(--primary-700);">Embu das Artes</strong>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
+                    <span class="text-small" style="color: var(--slate-500);">Motorista</span>
+                    <strong class="text-small" id="previewMotorista">-</strong>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; padding: 0.75rem; background: white; border-radius: var(--radius-md);">
+                    <span class="text-small" style="color: var(--slate-500);">Pagamento</span>
+                    <strong class="text-small" id="previewPagamento">-</strong>
+                  </div>
+                </div>
+
+                <div id="previewObs" class="hidden" style="margin-top: 1rem; padding: 0.75rem; background: var(--primary-50); border-radius: var(--radius-md); border-left: 3px solid var(--primary-600);">
+                  <div class="text-tiny" style="color: var(--primary-600); margin-bottom: 0.25rem;">OBSERVAÇÕES</div>
+                  <p class="text-small" style="color: var(--slate-700);" id="previewObsText">-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL CADASTRO RÁPIDO DE CLIENTE -->
+  <div id="novoClienteModal" class="modal-overlay hidden animate-scale-in">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Cadastro Rápido de Cliente</h3>
+        <button class="modal-close" onclick="fecharModalNovoCliente()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="formNovoCliente">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="novoClienteNome" class="form-label">Nome Completo *</label>
+              <input type="text" id="novoClienteNome" class="form-input" required minlength="3">
+            </div>
+
+            <div class="form-group">
+              <label for="novoClienteTelefone" class="form-label">Telefone *</label>
+              <input type="tel" id="novoClienteTelefone" class="form-input" required placeholder="(00) 00000-0000">
+            </div>
+
+            <div class="form-group">
+              <label for="novoClienteCEP" class="form-label">CEP *</label>
+              <input type="text" id="novoClienteCEP" class="form-input" required placeholder="00000-000">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="novoClienteEndereco" class="form-label">Endereço *</label>
+              <input type="text" id="novoClienteEndereco" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label for="novoClienteBairro" class="form-label">Bairro *</label>
+              <input type="text" id="novoClienteBairro" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label for="novoClienteCidade" class="form-label">Cidade *</label>
+              <input type="text" id="novoClienteCidade" class="form-input" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModalNovoCliente()">
+            <i data-lucide="x"></i>
+            <span>Cancelar</span>
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnSalvarCliente">
+            <i data-lucide="check"></i>
+            <span>Salvar Cliente</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL SUCESSO -->
+  <div id="successModal" class="modal-overlay hidden animate-scale-in">
+    <div class="modal modal-passagem">
+      <!-- Cabeçalho -->
+      <div class="passagem-header">
+        <h2>🎫 Passagem Confirmada</h2>
+        <div class="passagem-numero">#<span id="passagemNumero">000000</span></div>
+      </div>
+
+      <!-- Corpo da Mensagem (formatado para screenshot) -->
+      <div class="passagem-body">
+        <div class="passagem-info-card">
+          <div class="info-row">
+            <span class="info-label">Passageiro:</span>
+            <span class="info-value" id="msgCliente">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Data da Viagem:</span>
+            <span class="info-value" id="msgData">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Horário:</span>
+            <span class="info-value" id="msgHorario">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Origem:</span>
+            <span class="info-value" id="msgCidade">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Local de Embarque:</span>
+            <span class="info-value" id="msgLocal">-</span>
+          </div>
+
+          <div class="info-row" style="background: var(--primary-50); border: 1px solid var(--primary-200);">
+            <span class="info-label" style="color: var(--primary-700);">Destino:</span>
+            <span class="info-value" style="color: var(--primary-700); font-weight: 600;">Embu das Artes</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Motorista:</span>
+            <span class="info-value" id="msgMotorista">-</span>
+          </div>
+
+          <div class="info-row highlight">
+            <span class="info-label">Valor:</span>
+            <span class="info-value" id="msgValor">R$ 0,00</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Forma de Pagamento:</span>
+            <span class="info-value" id="msgPagamento">-</span>
+          </div>
+
+          <div class="info-row small">
+            <span class="info-label">Emitida em:</span>
+            <span class="info-value" id="msgEmissao">-</span>
+          </div>
+        </div>
+
+        <div class="passagem-footer">
+          <p>📱 Tire um print desta tela e envie ao passageiro</p>
+          <p class="footer-empresa">Expresso Embuibe - Boa Viagem!</p>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="passagem-actions">
+        <button class="btn btn-secondary" onclick="imprimirPassagem()">
+          <i data-lucide="printer"></i>
+          <span>Imprimir</span>
+        </button>
+        <button class="btn btn-primary" onclick="novaPassagem()">
+          <i data-lucide="check"></i>
+          <span>Concluir</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    console.log('🚀 SCRIPT DE EMISSÃO CARREGADO - Versão 1.1');
+
+    // Verificar autenticação
+    if (!api.client.getToken()) {
+      window.location.href = '../index.html';
+    }
+
+    console.log('✅ Autenticação OK');
+    lucide.createIcons();
+
+    let clientes = [];
+    let cidades = [];
+    let motoristas = [];
+    let ultimaPassagemId = null;
+
+    // Carregar usuário
+    async function loadUserData() {
+      try {
+        const user = await api.getMe();
+        document.getElementById('userName').textContent = user.nome;
+        const initials = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+      }
+    }
+
+    // Variáveis para busca de clientes
+    let clienteSelecionadoAtual = null;
+    let timeoutBusca = null;
+
+    // Busca de clientes em tempo real
+    const inputBusca = document.getElementById('clienteBusca');
+    const dropdown = document.getElementById('clienteDropdown');
+    const clienteIdInput = document.getElementById('clienteId');
+
+    inputBusca.addEventListener('input', function() {
+      const termo = this.value.trim();
+
+      // Limpa timeout anterior
+      clearTimeout(timeoutBusca);
+
+      if (termo.length < 2) {
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      // Mostra loading
+      dropdown.innerHTML = '<div class="autocomplete-loading">Buscando...</div>';
+      dropdown.style.display = 'block';
+
+      // Debounce de 300ms
+      timeoutBusca = setTimeout(async () => {
+        try {
+          const resultado = await api.getClientes({ q: termo, limit: 15 });
+          const clientes = resultado.items || resultado;
+
+          if (clientes.length === 0) {
+            dropdown.innerHTML = '<div class="autocomplete-empty">Nenhum cliente encontrado</div>';
+            return;
+          }
+
+          dropdown.innerHTML = clientes.map(cliente => `
+            <div class="autocomplete-item" onclick="selecionarCliente(${cliente.id}, '${cliente.nome.replace(/'/g, "\\'")}', '${cliente.telefone}')">
+              <div class="autocomplete-item-name">${cliente.nome}</div>
+              <div class="autocomplete-item-info">${cliente.telefone} • ${cliente.cidade || 'N/A'}</div>
+            </div>
+          `).join('');
+        } catch (error) {
+          console.error('Erro ao buscar clientes:', error);
+          dropdown.innerHTML = '<div class="autocomplete-empty">Erro ao buscar clientes</div>';
+        }
+      }, 300);
+    });
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#clienteBusca') && !e.target.closest('#clienteDropdown')) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    // Função para selecionar cliente
+    window.selecionarCliente = function(id, nome, telefone) {
+      clienteSelecionadoAtual = { id, nome, telefone };
+      clienteIdInput.value = id;
+      inputBusca.value = '';
+      inputBusca.style.display = 'none';
+      dropdown.style.display = 'none';
+
+      // Mostra cliente selecionado
+      document.getElementById('clienteSelecionadoNome').textContent = `${nome} - ${telefone}`;
+      document.getElementById('clienteSelecionado').style.display = 'flex';
+
+      lucide.createIcons();
+      atualizarPreview();
+    }
+
+    // Função para limpar cliente selecionado
+    window.limparClienteSelecionado = function() {
+      clienteSelecionadoAtual = null;
+      clienteIdInput.value = '';
+      inputBusca.value = '';
+      inputBusca.style.display = 'block';
+      document.getElementById('clienteSelecionado').style.display = 'none';
+      inputBusca.focus();
+    }
+
+    // Carregar dados iniciais
+    async function carregarDadosIniciais() {
+      try {
+        // Não carrega mais todos os clientes - busca é feita em tempo real
+
+        // Cidades
+        cidades = await api.getCidades();
+        const selectCidade = document.getElementById('cidadeId');
+        selectCidade.innerHTML = '<option value="">Selecione a cidade</option>';
+        cidades.forEach(cidade => {
+          selectCidade.innerHTML += `<option value="${cidade.id}">${cidade.nome}</option>`;
+        });
+
+        // Motoristas
+        motoristas = await api.getMotoristas();
+        const selectMotorista = document.getElementById('motoristaId');
+        selectMotorista.innerHTML = '<option value="">Selecione o motorista</option>';
+        motoristas.forEach(motorista => {
+          selectMotorista.innerHTML += `<option value="${motorista.id}">${motorista.nome}</option>`;
+        });
+
+        // Data padrão (hoje)
+        const hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('dataViagem').value = hoje;
+
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        alert('Erro ao carregar dados iniciais. Recarregue a página.');
+      }
+    }
+
+    // Carregar locais de embarque
+    async function carregarLocais() {
+      const cidadeId = document.getElementById('cidadeId').value;
+      const selectLocal = document.getElementById('localEmbarqueId');
+
+      if (!cidadeId) {
+        selectLocal.innerHTML = '<option value="">Selecione a cidade primeiro</option>';
+        return;
+      }
+
+      try {
+        const locais = await api.getLocaisByCidade(cidadeId);
+        selectLocal.innerHTML = '<option value="">Selecione o local</option>';
+        locais.forEach(local => {
+          selectLocal.innerHTML += `<option value="${local.id}">${local.nome}</option>`;
+        });
+      } catch (error) {
+        console.error('Erro ao carregar locais:', error);
+        selectLocal.innerHTML = '<option value="">Erro ao carregar</option>';
+      }
+    }
+
+    // Atualizar preview
+    function atualizarPreview() {
+      // Usa o cliente selecionado atual
+      document.getElementById('previewCliente').textContent = clienteSelecionadoAtual ? clienteSelecionadoAtual.nome : '-';
+
+      const dataViagem = document.getElementById('dataViagem').value;
+      document.getElementById('previewData').textContent = dataViagem ? new Date(dataViagem + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+
+      const horario = document.getElementById('horario').value;
+      document.getElementById('previewHorario').textContent = horario || '-';
+
+      const cidadeId = document.getElementById('cidadeId').value;
+      const cidade = cidades.find(c => c.id == cidadeId);
+      document.getElementById('previewCidade').textContent = cidade ? cidade.nome : '-';
+
+      const localId = document.getElementById('localEmbarqueId').value;
+      const localSelect = document.getElementById('localEmbarqueId');
+      const localText = localSelect.options[localSelect.selectedIndex]?.text || '-';
+      document.getElementById('previewEmbarque').textContent = localId ? localText : '-';
+
+      const motoristaId = document.getElementById('motoristaId').value;
+      const motorista = motoristas.find(m => m.id == motoristaId);
+      document.getElementById('previewMotorista').textContent = motorista ? motorista.nome : '-';
+
+      const formaPagamento = document.getElementById('formaPagamento').value;
+      document.getElementById('previewPagamento').textContent = formaPagamento || '-';
+
+      const obs = document.getElementById('observacoes').value;
+      if (obs) {
+        document.getElementById('previewObs').classList.remove('hidden');
+        document.getElementById('previewObsText').textContent = obs;
+      } else {
+        document.getElementById('previewObs').classList.add('hidden');
+      }
+    }
+
+    // Listeners para atualizar preview
+    document.getElementById('emissaoForm').addEventListener('input', atualizarPreview);
+    document.getElementById('emissaoForm').addEventListener('change', atualizarPreview);
+
+    // Submit do formulário
+    console.log('📋 Anexando event listener ao formulário de emissão...');
+    const formEmissao = document.getElementById('emissaoForm');
+    if (!formEmissao) {
+      console.error('❌ ERRO: Formulário emissaoForm não encontrado!');
+    } else {
+      console.log('✅ Formulário encontrado, anexando listener...');
+    }
+
+    formEmissao.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      console.log('🎫 FORM SUBMITTED! Iniciando emissão de passagem...');
+
+      // Validar se cliente foi selecionado
+      const clienteId = document.getElementById('clienteId').value;
+      if (!clienteId) {
+        alert('Por favor, selecione um cliente antes de emitir a passagem.');
+        console.error('❌ Cliente não selecionado');
+        return;
+      }
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.classList.add('btn-loading');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Emitindo...';
+
+      try {
+        const dados = {
+          cliente_id: parseInt(document.getElementById('clienteId').value),
+          data_viagem: document.getElementById('dataViagem').value,
+          horario: document.getElementById('horario').value,
+          cidade_id: parseInt(document.getElementById('cidadeId').value),
+          local_embarque_id: parseInt(document.getElementById('localEmbarqueId').value),
+          motorista_id: parseInt(document.getElementById('motoristaId').value),
+          forma_pagamento: document.getElementById('formaPagamento').value,
+          observacoes: document.getElementById('observacoes').value || null
+        };
+
+        console.log('📤 Enviando dados para API:', dados);
+
+        const resultado = await api.emitirPassagem(dados);
+        console.log('✅ Passagem emitida com sucesso:', resultado);
+
+        // Buscar dados completos para exibição
+        const cliente = clienteSelecionadoAtual;
+        const cidadeSelect = document.getElementById('cidadeId');
+        const cidadeNome = cidadeSelect.options[cidadeSelect.selectedIndex].text;
+        const localSelect = document.getElementById('localEmbarqueId');
+        const localNome = localSelect.options[localSelect.selectedIndex].text;
+        const motoristaSelect = document.getElementById('motoristaId');
+        const motoristaNome = motoristaSelect.options[motoristaSelect.selectedIndex].text.split(' (')[0]; // Remove proprietário
+
+        // Formatar data
+        const dataViagem = new Date(dados.data_viagem + 'T00:00:00');
+        const dataFormatada = dataViagem.toLocaleDateString('pt-BR');
+
+        // Formatar data de emissão
+        const agora = new Date();
+        const dataEmissao = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        // Preparar dados da passagem
+        const numeroPassagem = resultado.passagem ? resultado.passagem.numero : resultado.id;
+        const valorPassagem = resultado.passagem ? resultado.passagem.valor : 0;
+
+        const dadosPassagem = {
+          numero: String(numeroPassagem).padStart(6, '0'),
+          cliente: cliente.nome,
+          data: dataFormatada,
+          horario: dados.horario,
+          origem: cidadeNome,
+          local: localNome,
+          motorista: motoristaNome,
+          valor: Number(valorPassagem).toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
+          pagamento: dados.forma_pagamento,
+          emissao: dataEmissao
+        };
+
+        console.log('💾 Salvando dados no localStorage:', dadosPassagem);
+
+        // Salvar dados no localStorage
+        localStorage.setItem('ultimaPassagemEmitida', JSON.stringify(dadosPassagem));
+
+        // Redirecionar para página de passagem emitida
+        console.log('🔄 Redirecionando para passagem-emitida.html...');
+        window.location.href = 'passagem-emitida.html';
+
+      } catch (error) {
+        console.error('❌ Erro ao emitir passagem:', error);
+        alert(`Erro ao emitir passagem: ${error.message}`);
+
+        // Reativar botão em caso de erro
+        submitBtn.classList.remove('btn-loading');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="check"></i><span>Emitir Passagem</span>';
+        lucide.createIcons();
+      }
+    });
+
+    // Funções auxiliares
+    function limparFormulario() {
+      document.getElementById('emissaoForm').reset();
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('dataViagem').value = hoje;
+      atualizarPreview();
+    }
+
+    function fecharModalSucesso() {
+      document.getElementById('successModal').classList.add('hidden');
+    }
+
+    function novaPassagem() {
+      fecharModalSucesso();
+      limparFormulario();
+    }
+
+    function imprimirPassagem() {
+      window.print();
+    }
+
+    function abrirModalNovoCliente() {
+      document.getElementById('novoClienteModal').classList.remove('hidden');
+      document.getElementById('novoClienteNome').focus();
+      lucide.createIcons();
+    }
+
+    function fecharModalNovoCliente() {
+      document.getElementById('novoClienteModal').classList.add('hidden');
+      document.getElementById('formNovoCliente').reset();
+    }
+
+    // Submeter formulário de novo cliente
+    document.getElementById('formNovoCliente').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btnSalvar = document.getElementById('btnSalvarCliente');
+      btnSalvar.disabled = true;
+      btnSalvar.innerHTML = '<i data-lucide="loader"></i><span>Salvando...</span>';
+      lucide.createIcons();
+
+      try {
+        const novoCliente = {
+          nome: document.getElementById('novoClienteNome').value,
+          telefone: document.getElementById('novoClienteTelefone').value,
+          cep: document.getElementById('novoClienteCEP').value,
+          endereco: document.getElementById('novoClienteEndereco').value,
+          bairro: document.getElementById('novoClienteBairro').value,
+          cidade: document.getElementById('novoClienteCidade').value
+        };
+
+        const clienteCriado = await api.createCliente(novoCliente);
+
+        // Seleciona o cliente recém-criado
+        selecionarCliente(clienteCriado.id, clienteCriado.nome, clienteCriado.telefone);
+
+        // Fecha o modal
+        fecharModalNovoCliente();
+
+        // Mostra mensagem de sucesso
+        alert('Cliente cadastrado com sucesso!');
+
+      } catch (error) {
+        console.error('Erro ao cadastrar cliente:', error);
+        alert('Erro ao cadastrar cliente: ' + (error.message || 'Erro desconhecido'));
+      } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = '<i data-lucide="check"></i><span>Salvar Cliente</span>';
+        lucide.createIcons();
+      }
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Deseja realmente sair?')) {
+        api.logout();
+      }
+    });
+
+    // Inicializar
+    console.log('🔧 Iniciando carregamento de dados...');
+    loadUserData();
+    carregarDadosIniciais();
+    console.log('✅ PÁGINA DE EMISSÃO TOTALMENTE CARREGADA! Pronto para emitir passagens.');
+  </script>
+</body>
+</html>

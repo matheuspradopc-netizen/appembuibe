@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passagem Emitida - Expresso Embuibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    body {
+      background: var(--gradient-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .passagem-container {
+      max-width: 600px;
+      width: 100%;
+      animation: fadeInScale 0.4s ease-out;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .passagem-card {
+      background: white;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-2xl);
+      overflow: hidden;
+    }
+
+    .passagem-header {
+      background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .passagem-header h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    .passagem-numero {
+      font-size: 2.5rem;
+      font-weight: 800;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 3px;
+      margin-top: 0.5rem;
+    }
+
+    .passagem-body {
+      padding: 2rem;
+    }
+
+    .passagem-info-card {
+      background: var(--slate-50);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      border: 2px solid var(--slate-200);
+      margin-bottom: 1.5rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-row.highlight {
+      background: var(--primary-50);
+      margin: 0.75rem -0.75rem;
+      padding: 1rem 0.75rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--primary-200);
+      border-bottom: 1px solid var(--primary-200) !important;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: var(--slate-700);
+      font-size: 0.95rem;
+    }
+
+    .info-value {
+      color: var(--slate-900);
+      font-weight: 600;
+      text-align: right;
+      font-size: 1rem;
+    }
+
+    .info-row.highlight .info-label {
+      color: var(--primary-700);
+    }
+
+    .info-row.highlight .info-value {
+      color: var(--primary-700);
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .info-row.small {
+      font-size: 0.875rem;
+      color: var(--slate-600);
+      padding-top: 1rem;
+      margin-top: 0.75rem;
+      border-top: 1px solid var(--slate-300);
+    }
+
+    .passagem-footer {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--primary-50);
+      border-radius: var(--radius-lg);
+      border: 2px dashed var(--primary-300);
+    }
+
+    .passagem-footer p {
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+      color: var(--slate-700);
+    }
+
+    .footer-empresa {
+      font-weight: 700;
+      color: var(--primary-700);
+      font-size: 1.125rem !important;
+      margin-top: 0.75rem !important;
+    }
+
+    .passagem-actions {
+      display: flex;
+      gap: 1rem;
+      padding: 1.5rem 2rem 2rem 2rem;
+    }
+
+    .passagem-actions button {
+      flex: 1;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+      .passagem-actions {
+        display: none;
+      }
+      .passagem-card {
+        box-shadow: none;
+        border: 2px solid var(--slate-300);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="passagem-container">
+    <div class="passagem-card">
+      <!-- Cabeçalho -->
+      <div class="passagem-header">
+        <div class="success-icon">
+          <i data-lucide="check-circle" style="width: 40px; height: 40px;"></i>
+        </div>
+        <h1>🎫 Passagem Confirmada!</h1>
+        <div class="passagem-numero">#<span id="passagemNumero">000000</span></div>
+      </div>
+
+      <!-- Corpo da Mensagem -->
+      <div class="passagem-body">
+        <div class="passagem-info-card">
+          <div class="info-row">
+            <span class="info-label">Passageiro:</span>
+            <span class="info-value" id="msgCliente">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Data da Viagem:</span>
+            <span class="info-value" id="msgData">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Horário:</span>
+            <span class="info-value" id="msgHorario">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Origem:</span>
+            <span class="info-value" id="msgOrigem">-</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Local de Embarque:</span>
+            <span class="info-value" id="msgLocal">-</span>
+          </div>
+
+          <div class="info-row highlight">
+            <span class="info-label">Destino:</span>
+            <span class="info-value">Embu das Artes</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Motorista:</span>
+            <span class="info-value" id="msgMotorista">-</span>
+          </div>
+
+          <div class="info-row highlight">
+            <span class="info-label">Valor:</span>
+            <span class="info-value" id="msgValor">R$ 0,00</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Forma de Pagamento:</span>
+            <span class="info-value" id="msgPagamento">-</span>
+          </div>
+
+          <div class="info-row small">
+            <span class="info-label">Emitida em:</span>
+            <span class="info-value" id="msgEmissao">-</span>
+          </div>
+        </div>
+
+        <div class="passagem-footer">
+          <p>📱 <strong>Tire um print desta tela e envie ao passageiro</strong></p>
+          <p style="margin-top: 1rem;">Apresente este comprovante ao motorista durante o embarque</p>
+          <p class="footer-empresa">Expresso Embuibe - Boa Viagem!</p>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="passagem-actions">
+        <button type="button" class="btn btn-secondary" onclick="imprimirPassagem()">
+          <i data-lucide="printer"></i>
+          <span>Imprimir</span>
+        </button>
+        <button type="button" class="btn btn-primary" onclick="voltarDashboard()">
+          <i data-lucide="home"></i>
+          <span>Voltar ao Dashboard</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Carregar dados da passagem do localStorage
+    function carregarPassagem() {
+      console.log('📖 Carregando dados da passagem...');
+
+      const dadosJSON = localStorage.getItem('ultimaPassagemEmitida');
+
+      if (!dadosJSON) {
+        console.error('❌ Nenhuma passagem encontrada no localStorage');
+        alert('Nenhuma passagem encontrada. Redirecionando para o dashboard...');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      try {
+        const dados = JSON.parse(dadosJSON);
+        console.log('✅ Dados carregados:', dados);
+
+        // Preencher campos
+        document.getElementById('passagemNumero').textContent = dados.numero;
+        document.getElementById('msgCliente').textContent = dados.cliente;
+        document.getElementById('msgData').textContent = dados.data;
+        document.getElementById('msgHorario').textContent = dados.horario;
+        document.getElementById('msgOrigem').textContent = dados.origem;
+        document.getElementById('msgLocal').textContent = dados.local;
+        document.getElementById('msgMotorista').textContent = dados.motorista;
+        document.getElementById('msgValor').textContent = `R$ ${dados.valor}`;
+        document.getElementById('msgPagamento').textContent = dados.pagamento;
+        document.getElementById('msgEmissao').textContent = dados.emissao;
+
+        // Limpar localStorage após carregar (opcional - deixar comentado se quiser manter histórico)
+        // localStorage.removeItem('ultimaPassagemEmitida');
+
+      } catch (error) {
+        console.error('❌ Erro ao carregar dados:', error);
+        alert('Erro ao carregar passagem. Redirecionando...');
+        window.location.href = 'dashboard.html';
+      }
+    }
+
+    // Função para imprimir
+    function imprimirPassagem() {
+      console.log('🖨️ Imprimindo passagem...');
+      window.print();
+    }
+
+    // Função para voltar ao dashboard
+    function voltarDashboard() {
+      console.log('🏠 Voltando ao dashboard...');
+      window.location.href = 'dashboard.html';
+    }
+
+    // Carregar dados ao abrir a página
+    window.addEventListener('DOMContentLoaded', () => {
+      carregarPassagem();
+      lucide.createIcons();
+    });
+
+    // Prevenir voltar com navegador (opcional)
+    window.history.pushState(null, null, window.location.href);
+    window.addEventListener('popstate', function() {
+      window.history.pushState(null, null, window.location.href);
+    });
+  </script>
+</body>
+</html>

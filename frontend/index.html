@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Expresso Embuibe</title>
+
+  <!-- Fonte Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/styles.css?v=3">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <!-- Login Page -->
+  <div class="login-page">
+    <div class="login-card animate-scale-in">
+      <!-- Header -->
+      <div class="login-header">
+        <div class="login-logo">
+          <i data-lucide="bus"></i>
+        </div>
+        <h1 class="login-title">Expresso Embuibe</h1>
+        <p class="login-subtitle">Sistema de Gestão de Passagens</p>
+      </div>
+
+      <!-- Alert de erro (inicialmente oculto) -->
+      <div id="error-alert" class="alert alert-error hidden" role="alert">
+        <i data-lucide="alert-circle"></i>
+        <span id="error-message"></span>
+      </div>
+
+      <!-- Form -->
+      <form id="login-form" class="login-form">
+        <!-- Campo Login -->
+        <div class="form-group">
+          <label for="login" class="form-label form-label-required">Usuário</label>
+          <div class="form-input-group">
+            <div class="form-input-icon">
+              <i data-lucide="user"></i>
+            </div>
+            <input
+              type="text"
+              id="login"
+              name="login"
+              class="form-input"
+              placeholder="Digite seu usuário"
+              required
+              autofocus
+            >
+          </div>
+        </div>
+
+        <!-- Campo Senha -->
+        <div class="form-group">
+          <label for="senha" class="form-label form-label-required">Senha</label>
+          <div class="form-input-group">
+            <div class="form-input-icon">
+              <i data-lucide="lock"></i>
+            </div>
+            <input
+              type="password"
+              id="senha"
+              name="senha"
+              class="form-input"
+              placeholder="Digite sua senha"
+              required
+            >
+          </div>
+        </div>
+
+        <!-- Botão Submit -->
+        <button type="submit" id="btn-login" class="btn btn-primary btn-lg w-full">
+          <i data-lucide="log-in"></i>
+          Entrar
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <p>© 2025 Expresso Embuibe. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/api.js?v=3"></script>
+  <script>
+    // Inicializa os ícones Lucide
+    lucide.createIcons();
+
+    // Elementos do DOM
+    const loginForm = document.getElementById('login-form');
+    const btnLogin = document.getElementById('btn-login');
+    const errorAlert = document.getElementById('error-alert');
+    const errorMessage = document.getElementById('error-message');
+    const loginInput = document.getElementById('login');
+    const senhaInput = document.getElementById('senha');
+
+    /**
+     * Exibe mensagem de erro
+     */
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorAlert.classList.remove('hidden');
+      errorAlert.classList.add('animate-slide-up');
+
+      // Recria os ícones após mostrar o alert
+      setTimeout(() => lucide.createIcons(), 10);
+    }
+
+    /**
+     * Esconde mensagem de erro
+     */
+    function hideError() {
+      errorAlert.classList.add('hidden');
+      errorAlert.classList.remove('animate-slide-up');
+    }
+
+    /**
+     * Define estado de loading no botão
+     */
+    function setLoading(loading) {
+      if (loading) {
+        btnLogin.classList.add('btn-loading');
+        btnLogin.disabled = true;
+        loginInput.disabled = true;
+        senhaInput.disabled = true;
+      } else {
+        btnLogin.classList.remove('btn-loading');
+        btnLogin.disabled = false;
+        loginInput.disabled = false;
+        senhaInput.disabled = false;
+      }
+    }
+
+    /**
+     * Valida os campos do formulário
+     */
+    function validateForm(login, senha) {
+      if (!login || !senha) {
+        showError('Por favor, preencha todos os campos');
+        return false;
+      }
+
+      if (login.length < 3) {
+        showError('Usuário deve ter no mínimo 3 caracteres');
+        return false;
+      }
+
+      if (senha.length < 4) {
+        showError('Senha deve ter no mínimo 4 caracteres');
+        return false;
+      }
+
+      return true;
+    }
+
+    /**
+     * Salva dados do usuário no localStorage
+     */
+    function saveUserData(userData) {
+      localStorage.setItem('user', JSON.stringify({
+        id: userData.id,
+        nome: userData.nome,
+        login: userData.login,
+        tipo: userData.tipo
+      }));
+    }
+
+    /**
+     * Redireciona baseado no tipo de usuário
+     */
+    function redirectUser(userType) {
+      // Detecta se está usando servidor HTTP ou file://
+      const isLocalFile = window.location.protocol === 'file:';
+      const baseUrl = isLocalFile ? window.location.href.replace('index.html', '') : '/';
+
+      if (userType === 'admin') {
+        window.location.href = baseUrl + 'pages/admin/dashboard.html';
+      } else {
+        window.location.href = baseUrl + 'pages/dashboard.html';
+      }
+    }
+
+    /**
+     * Manipula o submit do formulário
+     */
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideError();
+
+      // Obtém valores dos campos
+      const login = loginInput.value.trim();
+      const senha = senhaInput.value;
+
+      // Valida
+      if (!validateForm(login, senha)) {
+        return;
+      }
+
+      // Inicia loading
+      setLoading(true);
+
+      try {
+        // Faz login
+        const response = await api.login(login, senha);
+
+        // Os dados do usuário já vêm na resposta do login
+        const userData = response.usuario;
+
+        // Salva dados
+        saveUserData(userData);
+
+        // Sucesso! Redireciona
+        redirectUser(userData.tipo);
+
+      } catch (error) {
+        setLoading(false);
+        showError(error.message || 'Erro ao fazer login. Tente novamente.');
+        console.error('Erro no login:', error);
+      }
+    }
+
+    // Event Listeners
+    loginForm.addEventListener('submit', handleLogin);
+
+    // Remove erro ao digitar
+    loginInput.addEventListener('input', hideError);
+    senhaInput.addEventListener('input', hideError);
+
+    // Verifica se já está logado ao carregar a página
+    window.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        try {
+          // Valida o token
+          const userData = await api.getMe();
+          saveUserData(userData);
+          redirectUser(userData.tipo);
+        } catch (error) {
+          // Token inválido, remove
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      }
+    });
+
+    // Easter egg: Credenciais de teste (apenas em desenvolvimento)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.log('%c🚌 Expresso Embuibe - Credenciais de Teste', 'color: #4F46E5; font-size: 14px; font-weight: bold;');
+      console.log('%cAdmin:', 'color: #10B981; font-weight: bold;');
+      console.log('  Login: admin');
+      console.log('  Senha: embuibe@2025');
+      console.log('%cAtendentes:', 'color: #F59E0B; font-weight: bold;');
+      console.log('  Login: mariana | Senha: 2107');
+      console.log('  Login: daniela | Senha: 2106');
+    }
+  </script>
+</body>
+</html>

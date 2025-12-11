@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatórios Admin - Expresso Embuibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="bus"></i>
+        </div>
+        <span class="sidebar-logo-text">Expresso Embuibe</span>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-section">
+          <div class="menu-section-title">Administração</div>
+          <a href="dashboard.html" class="menu-item">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard Admin</span>
+          </a>
+          <a href="relatorios.html" class="menu-item active">
+            <i data-lucide="file-text"></i>
+            <span>Relatórios Avançados</span>
+          </a>
+        </div>
+
+        <div class="menu-section">
+          <div class="menu-section-title">Atendimento</div>
+          <a href="../dashboard.html" class="menu-item">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard Atendente</span>
+          </a>
+          <a href="../emissao.html" class="menu-item">
+            <i data-lucide="ticket"></i>
+            <span>Emitir Passagem</span>
+          </a>
+          <a href="../clientes.html" class="menu-item">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+        </div>
+
+        <div class="menu-section">
+          <div class="menu-section-title">Sistema</div>
+          <a href="#" class="menu-item" id="logoutBtn">
+            <i data-lucide="power"></i>
+            <span>Sair</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="userAvatar">A</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="userName">Carregando...</div>
+            <div class="sidebar-user-role">Administrador</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <header class="header">
+        <h1 class="header-title">Relatórios Avançados</h1>
+        <div class="header-actions">
+          <button class="btn btn-success" id="exportBtn" onclick="exportarRelatorio()">
+            <i data-lucide="download"></i>
+            <span>Exportar Excel</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- FILTROS -->
+        <div class="card animate-fade-in">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Filtros</h2>
+              <p class="card-subtitle">Configure os parâmetros do relatório</p>
+            </div>
+            <button class="btn btn-ghost" onclick="limparFiltros()">
+              <i data-lucide="x"></i>
+              <span>Limpar</span>
+            </button>
+          </div>
+          <div class="card-body">
+            <form id="filtrosForm">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label form-label-required">Data Início</label>
+                  <input type="date" class="form-input" id="dataInicio" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label form-label-required">Data Fim</label>
+                  <input type="date" class="form-input" id="dataFim" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Motorista</label>
+                  <select class="form-select" id="motoristaId">
+                    <option value="">Todos os motoristas</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Cidade</label>
+                  <select class="form-select" id="cidadeId">
+                    <option value="">Todas as cidades</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Forma de Pagamento</label>
+                  <select class="form-select" id="formaPagamento">
+                    <option value="">Todas as formas</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Débito">Cartão de Débito</option>
+                    <option value="Crédito">Cartão de Crédito</option>
+                  </select>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                  <button type="submit" class="btn btn-primary" id="buscarBtn" style="width: 100%;">
+                    <i data-lucide="search"></i>
+                    <span>Buscar</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- TOTALIZADORES -->
+        <div class="grid-4 animate-slide-up stagger-1" style="margin-top: 1.5rem;" id="totalizadoresContainer">
+          <div class="metric-card" style="--icon-bg: var(--primary-50); --icon-color: var(--primary-600);">
+            <div class="metric-icon">
+              <i data-lucide="ticket"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Total de Passagens</div>
+              <div class="metric-value" id="totalPassagens">-</div>
+            </div>
+          </div>
+
+          <div class="metric-card" style="--icon-bg: var(--success-50); --icon-color: var(--success-600);">
+            <div class="metric-icon">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Total de Passageiros</div>
+              <div class="metric-value" id="totalPassageiros">-</div>
+            </div>
+          </div>
+
+          <div class="metric-card" style="--icon-bg: var(--warning-50); --icon-color: var(--warning-500);">
+            <div class="metric-icon">
+              <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Faturamento Total</div>
+              <div class="metric-value" id="faturamentoTotal">-</div>
+            </div>
+          </div>
+
+          <div class="metric-card" style="--icon-bg: var(--primary-50); --icon-color: var(--primary-600);">
+            <div class="metric-icon">
+              <i data-lucide="trending-up"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Ticket Médio</div>
+              <div class="metric-value" id="ticketMedio">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA DE PASSAGENS -->
+        <div class="card animate-slide-up stagger-2" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Passagens Detalhadas</h2>
+              <p class="card-subtitle" id="subtituloTabela">Configure os filtros e clique em Buscar</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-sm btn-ghost" onclick="imprimirRelatorio()">
+                <i data-lucide="printer"></i>
+              </button>
+              <button class="btn btn-sm btn-ghost" onclick="carregarRelatorio()">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Passageiro</th>
+                    <th>Cidade</th>
+                    <th>Embarque</th>
+                    <th>Motorista</th>
+                    <th>Pagamento</th>
+                    <th style="text-align: right;">Valor</th>
+                  </tr>
+                </thead>
+                <tbody id="passagensTable">
+                  <tr>
+                    <td colspan="9" style="text-align: center; padding: 3rem; color: var(--slate-400);">
+                      <i data-lucide="search" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+                      <p>Configure os filtros e clique em "Buscar" para visualizar os dados</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- PAGINAÇÃO -->
+          <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--slate-100); display: flex; align-items: center; justify-content: space-between;">
+            <div class="text-small" style="color: var(--slate-600);">
+              Mostrando <strong id="showingFrom">0</strong> a <strong id="showingTo">0</strong> de <strong id="totalCount">0</strong> passagens
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-sm btn-ghost" id="prevBtn" onclick="paginaAnterior()" disabled>
+                <i data-lucide="chevron-left"></i>
+              </button>
+              <button class="btn btn-sm btn-ghost" id="nextBtn" onclick="proximaPagina()" disabled>
+                <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANÁLISES ADICIONAIS -->
+        <div class="grid-2 animate-slide-up stagger-3" style="margin-top: 1.5rem; gap: 1.5rem;">
+          <!-- TOP CIDADES -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Top 5 Cidades</h2>
+                <p class="card-subtitle">Destinos mais procurados no período</p>
+              </div>
+            </div>
+            <div class="card-body" id="topCidades">
+              <div style="text-align: center; padding: 2rem; color: var(--slate-400);">
+                <p>Busque um relatório primeiro</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOP MOTORISTAS -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Top 5 Motoristas</h2>
+                <p class="card-subtitle">Motoristas com mais viagens no período</p>
+              </div>
+            </div>
+            <div class="card-body" id="topMotoristas">
+              <div style="text-align: center; padding: 2rem; color: var(--slate-400);">
+                <p>Busque um relatório primeiro</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../../js/api.js"></script>
+  <script>
+    // Verificar autenticação e permissão admin
+    if (!api.client.getToken()) {
+      window.location.href = '../../index.html';
+    }
+
+    lucide.createIcons();
+
+    let passagens = [];
+    let passagensFiltradas = [];
+    let paginaAtual = 1;
+    let itensPorPagina = 50;
+    let motoristas = [];
+    let cidades = [];
+
+    // Carregar dados do usuário
+    async function loadUserData() {
+      try {
+        const user = await api.getMe();
+
+        // Verificar se é admin
+        if (user.tipo !== 'admin') {
+          alert('Acesso negado! Apenas administradores podem acessar esta página.');
+          window.location.href = '../dashboard.html';
+          return;
+        }
+
+        document.getElementById('userName').textContent = user.nome;
+        const initials = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+        window.location.href = '../../index.html';
+      }
+    }
+
+    // Carregar dados auxiliares
+    async function carregarDadosAuxiliares() {
+      try {
+        // Motoristas
+        motoristas = await api.getMotoristas();
+        const selectMotorista = document.getElementById('motoristaId');
+        motoristas.forEach(m => {
+          selectMotorista.innerHTML += `<option value="${m.id}">${m.nome}</option>`;
+        });
+
+        // Cidades
+        cidades = await api.getCidades();
+        const selectCidade = document.getElementById('cidadeId');
+        cidades.forEach(c => {
+          selectCidade.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+        });
+      } catch (error) {
+        console.error('Erro ao carregar dados auxiliares:', error);
+      }
+    }
+
+    // Configurar datas padrão
+    function configurarDatas() {
+      const hoje = new Date();
+      const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+      document.getElementById('dataInicio').value = primeiroDiaMes.toISOString().split('T')[0];
+      document.getElementById('dataFim').value = hoje.toISOString().split('T')[0];
+    }
+
+    // Buscar relatório
+    document.getElementById('filtrosForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await carregarRelatorio();
+    });
+
+    async function carregarRelatorio() {
+      const dataInicio = document.getElementById('dataInicio').value;
+      const dataFim = document.getElementById('dataFim').value;
+
+      if (!dataInicio || !dataFim) {
+        alert('Selecione as datas de início e fim');
+        return;
+      }
+
+      const btn = document.getElementById('buscarBtn');
+      btn.classList.add('btn-loading');
+      btn.disabled = true;
+
+      try {
+        const relatorio = await api.getRelatorioPeriodo(dataInicio, dataFim);
+        passagens = relatorio.passagens || [];
+
+        // Aplicar filtros adicionais
+        aplicarFiltros();
+
+        // Atualizar totalizadores
+        atualizarTotalizadores();
+
+        // Renderizar tabela
+        renderizarTabela();
+
+        // Renderizar análises
+        renderizarAnalises();
+
+        // Atualizar subtítulo
+        const dataInicioObj = new Date(dataInicio + 'T00:00:00');
+        const dataFimObj = new Date(dataFim + 'T00:00:00');
+        document.getElementById('subtituloTabela').textContent =
+          `${dataInicioObj.toLocaleDateString('pt-BR')} a ${dataFimObj.toLocaleDateString('pt-BR')}`;
+
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Erro ao carregar relatório:', error);
+        alert(`Erro ao carregar relatório: ${error.message}`);
+      } finally {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+      }
+    }
+
+    // Aplicar filtros
+    function aplicarFiltros() {
+      const motoristaId = document.getElementById('motoristaId').value;
+      const cidadeId = document.getElementById('cidadeId').value;
+      const formaPagamento = document.getElementById('formaPagamento').value;
+
+      passagensFiltradas = passagens.filter(p => {
+        if (motoristaId && p.motorista_id != motoristaId) return false;
+        if (cidadeId && p.cidade_id != cidadeId) return false;
+        if (formaPagamento && p.forma_pagamento !== formaPagamento) return false;
+        return true;
+      });
+
+      paginaAtual = 1;
+    }
+
+    // Atualizar totalizadores
+    function atualizarTotalizadores() {
+      const totalPassagens = passagensFiltradas.length;
+      const totalPassageiros = passagensFiltradas.length; // Assumindo 1 passageiro por passagem
+      const faturamento = passagensFiltradas.reduce((sum, p) => sum + (p.valor || 0), 0);
+      const ticketMedio = totalPassageiros > 0 ? faturamento / totalPassageiros : 0;
+
+      document.getElementById('totalPassagens').textContent = totalPassagens;
+      document.getElementById('totalPassageiros').textContent = totalPassageiros;
+      document.getElementById('faturamentoTotal').textContent =
+        `R$ ${faturamento.toFixed(2).replace('.', ',')}`;
+      document.getElementById('ticketMedio').textContent =
+        `R$ ${ticketMedio.toFixed(2).replace('.', ',')}`;
+    }
+
+    // Renderizar tabela
+    function renderizarTabela() {
+      const tbody = document.getElementById('passagensTable');
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = inicio + itensPorPagina;
+      const passagensPagina = passagensFiltradas.slice(inicio, fim);
+
+      if (passagensFiltradas.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 3rem; color: var(--slate-400);">
+              <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+              <p>Nenhuma passagem encontrada com os filtros selecionados</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = passagensPagina.map(p => `
+          <tr>
+            <td><strong>#${String(p.id).padStart(6, '0')}</strong></td>
+            <td>${new Date(p.data_viagem).toLocaleDateString('pt-BR')}</td>
+            <td>${p.horario}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div style="width: 28px; height: 28px; background: var(--primary-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600; font-size: 0.7rem;">
+                  ${p.cliente_nome.charAt(0).toUpperCase()}
+                </div>
+                <span>${p.cliente_nome}</span>
+              </div>
+            </td>
+            <td>${p.cidade}</td>
+            <td>${p.local_embarque}</td>
+            <td>${p.motorista_nome}</td>
+            <td><span class="badge badge-neutral">${p.forma_pagamento}</span></td>
+            <td style="text-align: right; font-weight: 600;">R$ ${p.valor.toFixed(2).replace('.', ',')}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Atualizar informações de paginação
+      document.getElementById('showingFrom').textContent = passagensFiltradas.length > 0 ? inicio + 1 : 0;
+      document.getElementById('showingTo').textContent = Math.min(fim, passagensFiltradas.length);
+      document.getElementById('totalCount').textContent = passagensFiltradas.length;
+
+      // Botões de paginação
+      document.getElementById('prevBtn').disabled = paginaAtual === 1;
+      document.getElementById('nextBtn').disabled = fim >= passagensFiltradas.length;
+
+      lucide.createIcons();
+    }
+
+    // Renderizar análises
+    function renderizarAnalises() {
+      // Top Cidades
+      const cidadesMap = {};
+      passagensFiltradas.forEach(p => {
+        if (!cidadesMap[p.cidade]) {
+          cidadesMap[p.cidade] = { count: 0, valor: 0 };
+        }
+        cidadesMap[p.cidade].count++;
+        cidadesMap[p.cidade].valor += p.valor;
+      });
+
+      const topCidades = Object.entries(cidadesMap)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 5);
+
+      const containerCidades = document.getElementById('topCidades');
+      if (topCidades.length === 0) {
+        containerCidades.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--slate-400);">Nenhum dado</div>';
+      } else {
+        containerCidades.innerHTML = topCidades.map((item, idx) => `
+          <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--slate-50); border-radius: var(--radius-md); margin-bottom: 0.75rem;">
+            <div style="width: 32px; height: 32px; background: var(--primary-600); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">
+              ${idx + 1}
+            </div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; color: var(--slate-800);">${item[0]}</div>
+              <div style="font-size: 0.75rem; color: var(--slate-500);">${item[1].count} passageiros | R$ ${item[1].valor.toFixed(2).replace('.', ',')}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Top Motoristas
+      const motoristasMap = {};
+      passagensFiltradas.forEach(p => {
+        if (!motoristasMap[p.motorista_nome]) {
+          motoristasMap[p.motorista_nome] = { count: 0, valor: 0 };
+        }
+        motoristasMap[p.motorista_nome].count++;
+        motoristasMap[p.motorista_nome].valor += p.valor;
+      });
+
+      const topMotoristas = Object.entries(motoristasMap)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 5);
+
+      const containerMotoristas = document.getElementById('topMotoristas');
+      if (topMotoristas.length === 0) {
+        containerMotoristas.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--slate-400);">Nenhum dado</div>';
+      } else {
+        containerMotoristas.innerHTML = topMotoristas.map((item, idx) => `
+          <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--slate-50); border-radius: var(--radius-md); margin-bottom: 0.75rem;">
+            <div style="width: 32px; height: 32px; background: var(--success-600); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">
+              ${idx + 1}
+            </div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; color: var(--slate-800);">${item[0]}</div>
+              <div style="font-size: 0.75rem; color: var(--slate-500);">${item[1].count} viagens | R$ ${item[1].valor.toFixed(2).replace('.', ',')}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Paginação
+    function proximaPagina() {
+      paginaAtual++;
+      renderizarTabela();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function paginaAnterior() {
+      paginaAtual--;
+      renderizarTabela();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Limpar filtros
+    function limparFiltros() {
+      document.getElementById('filtrosForm').reset();
+      configurarDatas();
+      document.getElementById('motoristaId').value = '';
+      document.getElementById('cidadeId').value = '';
+      document.getElementById('formaPagamento').value = '';
+    }
+
+    // Exportar relatório
+    function exportarRelatorio() {
+      if (passagensFiltradas.length === 0) {
+        alert('Carregue um relatório primeiro');
+        return;
+      }
+
+      try {
+        // Cabeçalho do CSV
+        const headers = ['Código', 'Data', 'Horário', 'Passageiro', 'Cidade', 'Embarque', 'Motorista', 'Pagamento', 'Valor'];
+
+        // Converter passagens para linhas CSV
+        const rows = passagensFiltradas.map(p => {
+          const data = new Date(p.data_viagem).toLocaleDateString('pt-BR');
+          const valor = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+          }).format(p.valor);
+
+          return [
+            p.id,
+            data,
+            p.horario,
+            p.cliente_nome,
+            p.cidade,
+            p.local_embarque,
+            p.motorista_nome,
+            p.forma_pagamento,
+            valor
+          ].map(field => `"${field}"`).join(',');
+        });
+
+        // Montar CSV
+        const csv = [headers.join(','), ...rows].join('\n');
+
+        // Criar Blob e fazer download
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        const dataInicio = document.getElementById('dataInicio').value;
+        const dataFim = document.getElementById('dataFim').value;
+        const filename = `relatorio_${dataInicio}_${dataFim}.csv`;
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+
+        // Feedback para o usuário
+        const btnExport = document.getElementById('exportBtn');
+        const originalText = btnExport.innerHTML;
+        btnExport.innerHTML = '<i data-lucide="check"></i><span>Exportado!</span>';
+        btnExport.classList.add('btn-success');
+        lucide.createIcons();
+
+        setTimeout(() => {
+          btnExport.innerHTML = originalText;
+          btnExport.classList.remove('btn-success');
+          lucide.createIcons();
+        }, 2000);
+
+      } catch (error) {
+        console.error('Erro ao exportar:', error);
+        alert('Erro ao exportar relatório: ' + error.message);
+      }
+    }
+
+    // Imprimir relatório
+    function imprimirRelatorio() {
+      window.print();
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Deseja realmente sair?')) {
+        api.logout();
+      }
+    });
+
+    // Inicializar
+    loadUserData();
+    carregarDadosAuxiliares();
+    configurarDatas();
+  </script>
+</body>
+</html>

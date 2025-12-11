@@ -1,0 +1,285 @@
+================================================================================
+ESTRUTURA COMPLETA DO BANCO DE DADOS - EXPRESSO EMBUIBE
+================================================================================
+
+RESUMO GERAL:
+-------------
+- Banco de Dados: SQLite (expresso_embuibe.db)
+- Total de Tabelas: 8
+- Total de Registros: 94,221
+
+================================================================================
+TABELAS E RELACIONAMENTOS
+================================================================================
+
+1. CIDADES (5 registros)
+   ├─ id (PK)
+   ├─ nome (Peruibe, Itanhaem, Mongagua, Praia Grande, Santos)
+   └─ ordem
+
+2. PROPRIETARIOS (7 registros)
+   ├─ id (PK)
+   ├─ nome (Adelson JR, Walter, Junior, Anderson, etc.)
+   └─ ativo
+
+3. MOTORISTAS (7 registros)
+   ├─ id (PK)
+   ├─ nome (Mauro, Walter, Zacarias, Geraldo, etc.)
+   ├─ proprietario_id (FK → proprietarios)
+   ├─ vagas (14-15 vagas)
+   └─ ativo
+
+4. LOCAIS_EMBARQUE (49 registros)
+   ├─ id (PK)
+   ├─ cidade_id (FK → cidades)
+   ├─ nome (Centro, Casa, Santa Cruz, etc.)
+   ├─ valor (R$ 45,00 - R$ 100,00)
+   └─ ativo
+
+5. CLIENTES (25,723 registros) ★★★
+   ├─ id (PK)
+   ├─ nome
+   ├─ telefone
+   ├─ endereco
+   ├─ bairro
+   ├─ cidade
+   ├─ cep
+   └─ ativo
+
+6. USUARIOS (3 registros)
+   ├─ id (PK)
+   ├─ nome (Administrador, Mariana, Daniela)
+   ├─ login (admin, mariana, daniela)
+   ├─ senha_hash (bcrypt)
+   ├─ tipo (admin, atendente)
+   └─ ativo
+
+7. PASSAGENS (68,481 registros) ★★★
+   ├─ id (PK)
+   ├─ numero (sequencial único)
+   ├─ cliente_id (FK → clientes)
+   ├─ local_embarque_id (FK → locais_embarque)
+   ├─ motorista_id (FK → motoristas)
+   ├─ atendente_id (FK → usuarios)
+   ├─ horario (06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00)
+   ├─ data_viagem
+   ├─ data_emissao
+   ├─ valor
+   ├─ forma_pagamento (DINHEIRO, CARTAO, PIX)
+   └─ status (EMITIDA, UTILIZADA, CANCELADA)
+
+8. VIAGENS (1 registro) ★ NOVO ★
+   ├─ id (PK)
+   ├─ motorista_id (FK → motoristas)
+   ├─ atendente_id (FK → usuarios)
+   ├─ data
+   ├─ horario
+   ├─ total_passageiros (calculado automaticamente)
+   ├─ valor_total (calculado automaticamente)
+   ├─ status (PENDENTE, SAIU) ← NOVO CAMPO
+   └─ data_saida (timestamp quando marcada como SAIU) ← NOVO CAMPO
+
+================================================================================
+FLUXO DE DADOS - LÓGICA SIMPLIFICADA
+================================================================================
+
+PASSO 1: EMITIR PASSAGEM
+┌─────────────────────────────────────────────────────────────┐
+│ Atendente seleciona:                                        │
+│ - Cliente                                                   │
+│ - Local de embarque (determina valor automaticamente)      │
+│ - Motorista                                                 │
+│ - Horário (fixo: 06:00, 08:00, 10:00, 12:00, 14:00, etc.) │
+│ - Data da viagem                                            │
+│ - Forma de pagamento                                        │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│ SISTEMA FAZ AUTOMATICAMENTE:                                │
+│                                                             │
+│ 1. Cria registro em PASSAGENS                               │
+│    - status = "EMITIDA"                                     │
+│    - gera número sequencial                                 │
+│                                                             │
+│ 2. Busca VIAGEM existente com:                              │
+│    - mesma data                                             │
+│    - mesmo horário                                          │
+│    - mesmo motorista                                        │
+│                                                             │
+│ 3a. Se VIAGEM EXISTE:                                       │
+│     → incrementa total_passageiros (+1)                     │
+│     → soma ao valor_total                                   │
+│                                                             │
+│ 3b. Se VIAGEM NÃO EXISTE:                                   │
+│     → cria nova VIAGEM                                      │
+│     → total_passageiros = 1                                 │
+│     → valor_total = valor da passagem                       │
+│     → status = "PENDENTE"                                   │
+└─────────────────────────────────────────────────────────────┘
+
+PASSO 2: CONFIRMAR SAÍDA DA VAN
+┌─────────────────────────────────────────────────────────────┐
+│ Atendente confirma que a van saiu:                          │
+│ - Seleciona data, horário, motorista                        │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│ SISTEMA ATUALIZA:                                           │
+│                                                             │
+│ 1. Localiza VIAGEM correspondente                           │
+│ 2. Atualiza status: PENDENTE → SAIU                         │
+│ 3. Registra data_saida com timestamp atual                  │
+└─────────────────────────────────────────────────────────────┘
+
+================================================================================
+RELACIONAMENTOS (FOREIGN KEYS)
+================================================================================
+
+PASSAGENS
+├─ cliente_id → CLIENTES.id
+├─ local_embarque_id → LOCAIS_EMBARQUE.id
+├─ motorista_id → MOTORISTAS.id
+└─ atendente_id → USUARIOS.id
+
+VIAGENS
+├─ motorista_id → MOTORISTAS.id
+└─ atendente_id → USUARIOS.id
+
+LOCAIS_EMBARQUE
+└─ cidade_id → CIDADES.id
+
+MOTORISTAS
+└─ proprietario_id → PROPRIETARIOS.id
+
+================================================================================
+EXEMPLO DE DADOS REAIS
+================================================================================
+
+CIDADES:
+1. Peruíbe
+2. Itanhaém
+3. Mongaguá
+4. Praia Grande
+5. Santos
+
+MOTORISTAS → PROPRIETÁRIOS:
+- Mauro (Adelson JR) - 15 vagas
+- Walter (Walter) - 14 vagas
+- Zacarias (Junior) - 14 vagas
+- Geraldo (Anderson) - 14 vagas
+- Jailson (Andrezinho) - 14 vagas
+- Gilberto (Anderson) - 14 vagas
+- Luciano (Anderson) - 14 vagas
+
+LOCAIS DE EMBARQUE (exemplos):
+Peruíbe:
+- Centro: R$ 65,00
+- Casa: R$ 65,00
+- Santa Cruz: R$ 65,00
+- Balneário Arpoador: R$ 65,00
+- Jardim Peruíbe: R$ 65,00
+
+Itanhaém:
+- Centro: R$ 80,00
+- Praia dos Sonhos: R$ 80,00
+- Suarão: R$ 80,00
+
+Santos:
+- Centro: R$ 100,00
+- Gonzaga: R$ 100,00
+- Ponta da Praia: R$ 100,00
+
+USUÁRIOS:
+1. admin (Administrador) - tipo: admin
+2. mariana (Mariana) - tipo: atendente
+3. daniela (Daniela) - tipo: atendente
+
+PASSAGENS (exemplo do primeiro registro histórico):
+- Número: 1
+- Cliente: CELMA/VALERIO
+- Local: Centro (Peruíbe)
+- Motorista: Mauro
+- Data viagem: 2016-12-16
+- Horário: 06:00
+- Valor: R$ 40,00
+- Status: UTILIZADA
+
+VIAGENS (registro atual do teste):
+- ID: 1
+- Data: 2025-12-10
+- Horário: 14:00
+- Motorista: Mauro (Adelson JR)
+- Total Passageiros: 1
+- Valor Total: R$ 65,00
+- Status: SAIU
+- Data Saída: 2025-12-10 02:29:48
+
+================================================================================
+ESTATÍSTICAS DO BANCO
+================================================================================
+
+📊 VOLUME DE DADOS:
+   • 25.723 clientes cadastrados
+   • 68.481 passagens emitidas (histórico desde 2016)
+   • 1 viagem registrada (sistema novo)
+   • 7 motoristas ativos
+   • 7 proprietários
+   • 49 locais de embarque
+   • 5 cidades atendidas
+   • 3 usuários do sistema
+
+💰 FORMAS DE PAGAMENTO:
+   • DINHEIRO
+   • CARTAO
+   • PIX
+
+🚐 STATUS DE PASSAGENS:
+   • EMITIDA - Passagem vendida, aguardando viagem
+   • UTILIZADA - Passagem já foi usada (histórico)
+   • CANCELADA - Passagem cancelada
+
+🚦 STATUS DE VIAGENS:
+   • PENDENTE - Van ainda não saiu
+   • SAIU - Van já partiu
+
+⏰ HORÁRIOS FIXOS DE OPERAÇÃO:
+   • 06:00
+   • 08:00
+   • 10:00
+   • 12:00
+   • 14:00
+   • 16:00
+   • 18:00
+
+================================================================================
+CAMPOS ADICIONADOS NO SISTEMA SIMPLIFICADO
+================================================================================
+
+Tabela VIAGENS:
+✓ status (VARCHAR 20, default "PENDENTE")
+  - Controla se a van já saiu ou não
+  - Valores: "PENDENTE" ou "SAIU"
+
+✓ data_saida (TIMESTAMP, nullable)
+  - Registra quando o atendente confirmou a saída
+  - NULL = ainda não saiu
+  - Data/hora = momento da confirmação
+
+================================================================================
+INTEGRIDADE REFERENCIAL
+================================================================================
+
+Todas as tabelas com relacionamentos usam Foreign Keys para garantir:
+- Não é possível deletar um cliente que tem passagens
+- Não é possível deletar um motorista que tem viagens
+- Não é possível deletar um local de embarque em uso
+- Todos os registros relacionados são consistentes
+
+Campos "ativo" (soft delete):
+- Permite desativar registros sem deletá-los
+- Mantém histórico intacto
+- Presente em: clientes, proprietarios, motoristas, locais_embarque, usuarios
+
+================================================================================
+FIM DA DOCUMENTAÇÃO
+================================================================================

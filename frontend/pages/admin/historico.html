@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico e Relatórios - Expresso Embuibe</title>
+  <link rel="stylesheet" href="../../css/design-system.css">
+  <link rel="stylesheet" href="../../css/components.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .filters-section {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-start;
+      margin-top: 1rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-icon.primary {
+      background: var(--primary-50);
+      color: var(--primary-600);
+    }
+
+    .stat-icon.success {
+      background: var(--success-50);
+      color: var(--success-600);
+    }
+
+    .stat-icon.info {
+      background: var(--info-50);
+      color: var(--info-600);
+    }
+
+    .stat-icon.warning {
+      background: var(--warning-50);
+      color: var(--warning-600);
+    }
+
+    .stat-value {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--slate-600);
+    }
+
+    .table-container {
+      background: white;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .table-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--slate-900);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table thead {
+      background: var(--slate-50);
+    }
+
+    .data-table th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .data-table td {
+      padding: 0.875rem 1rem;
+      font-size: 0.875rem;
+      color: var(--slate-900);
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--slate-50);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: var(--success-100);
+      color: var(--success-700);
+    }
+
+    .badge-info {
+      background: var(--info-100);
+      color: var(--info-700);
+    }
+
+    .badge-warning {
+      background: var(--warning-100);
+      color: var(--warning-700);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--slate-900);
+      margin-bottom: 1rem;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+
+    .summary-label {
+      font-size: 0.875rem;
+      color: var(--slate-600);
+    }
+
+    .summary-value {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--slate-900);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--slate-500);
+    }
+
+    .empty-icon {
+      width: 4rem;
+      height: 4rem;
+      margin: 0 auto 1rem;
+      color: var(--slate-400);
+    }
+
+    .quick-filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
+    .quick-filter-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      border: 1px solid var(--slate-300);
+      background: white;
+      color: var(--slate-700);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-filter-btn:hover {
+      background: var(--slate-50);
+      border-color: var(--primary-500);
+      color: var(--primary-600);
+    }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      color: var(--primary-600);
+    }
+
+    .spinner {
+      width: 2rem;
+      height: 2rem;
+      border: 3px solid var(--primary-100);
+      border-top-color: var(--primary-600);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i data-lucide="truck" class="sidebar-logo"></i>
+        <span class="sidebar-title">Expresso Embuibe</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="../dashboard.html" class="nav-item">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="../emissao.html" class="nav-item">
+          <i data-lucide="ticket"></i>
+          <span>Emissão</span>
+        </a>
+
+        <a href="../registro.html" class="nav-item">
+          <i data-lucide="clipboard-list"></i>
+          <span>Registro de Saída</span>
+        </a>
+
+        <a href="../clientes.html" class="nav-item">
+          <i data-lucide="users"></i>
+          <span>Clientes</span>
+        </a>
+
+        <div class="nav-divider"></div>
+        <div class="nav-section-title">ADMINISTRAÇÃO</div>
+
+        <a href="dashboard.html" class="nav-item">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Dashboard Admin</span>
+        </a>
+
+        <a href="relatorios.html" class="nav-item">
+          <i data-lucide="file-text"></i>
+          <span>Relatórios</span>
+        </a>
+
+        <a href="historico.html" class="nav-item active">
+          <i data-lucide="history"></i>
+          <span>Histórico Completo</span>
+        </a>
+
+        <a href="motoristas.html" class="nav-item">
+          <i data-lucide="user-check"></i>
+          <span>Motoristas</span>
+        </a>
+
+        <a href="locais.html" class="nav-item">
+          <i data-lucide="map-pin"></i>
+          <span>Locais de Embarque</span>
+        </a>
+
+        <a href="usuarios.html" class="nav-item">
+          <i data-lucide="shield"></i>
+          <span>Usuários</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <i data-lucide="user" class="user-avatar"></i>
+          <div class="user-details">
+            <div class="user-name" id="userName">Carregando...</div>
+            <div class="user-role" id="userRole">...</div>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="logout()" title="Sair">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Histórico Completo de Viagens</h1>
+          <p class="page-subtitle">Consulte todo o histórico de viagens e gere relatórios personalizados</p>
+        </div>
+      </header>
+
+      <!-- Filtros -->
+      <div class="filters-section">
+        <div class="filters-grid">
+          <div class="form-group">
+            <label class="form-label">Data Inicial</label>
+            <input type="date" class="form-input" id="dataInicio" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Data Final</label>
+            <input type="date" class="form-input" id="dataFim" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Motorista (Opcional)</label>
+            <select class="form-input" id="motoristaFiltro">
+              <option value="">Todos os motoristas</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="quick-filters">
+          <button class="quick-filter-btn" onclick="setQuickFilter('hoje')">Hoje</button>
+          <button class="quick-filter-btn" onclick="setQuickFilter('semana')">Esta Semana</button>
+          <button class="quick-filter-btn" onclick="setQuickFilter('mes')">Este Mês</button>
+          <button class="quick-filter-btn" onclick="setQuickFilter('ano')">Este Ano</button>
+          <button class="quick-filter-btn" onclick="setQuickFilter('tudo')">Todo o Histórico</button>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn btn-primary" onclick="gerarRelatorio()">
+            <i data-lucide="search"></i>
+            Gerar Relatório
+          </button>
+          <button class="btn btn-secondary" onclick="exportarCSV()" id="btnExportar" style="display: none;">
+            <i data-lucide="download"></i>
+            Exportar CSV
+          </button>
+          <button class="btn btn-secondary" onclick="limparFiltros()">
+            <i data-lucide="x"></i>
+            Limpar
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loadingState" class="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Estatísticas -->
+      <div id="statsSection" style="display: none;">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon primary">
+              <i data-lucide="ticket"></i>
+            </div>
+            <div class="stat-value" id="statPassagens">0</div>
+            <div class="stat-label">Total de Passagens</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon success">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="stat-value" id="statPassageiros">0</div>
+            <div class="stat-label">Total de Passageiros</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon info">
+              <i data-lucide="truck"></i>
+            </div>
+            <div class="stat-value" id="statViagens">0</div>
+            <div class="stat-label">Total de Viagens</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon warning">
+              <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="stat-value" id="statFaturamento">R$ 0,00</div>
+            <div class="stat-label">Faturamento Total</div>
+          </div>
+        </div>
+
+        <!-- Resumos -->
+        <div class="summary-grid">
+          <!-- Resumo por Motorista -->
+          <div class="summary-card">
+            <div class="summary-title">Resumo por Motorista</div>
+            <div id="resumoMotorista"></div>
+          </div>
+
+          <!-- Resumo por Forma de Pagamento -->
+          <div class="summary-card">
+            <div class="summary-title">Resumo por Forma de Pagamento</div>
+            <div id="resumoPagamento"></div>
+          </div>
+        </div>
+
+        <!-- Tabela de Passagens -->
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">Lista Completa de Passagens</div>
+            <div style="color: var(--slate-600); font-size: 0.875rem;">
+              <span id="totalRegistros">0</span> registros
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nº Passagem</th>
+                  <th>Data</th>
+                  <th>Horário</th>
+                  <th>Cliente</th>
+                  <th>Motorista</th>
+                  <th>Proprietário</th>
+                  <th>Local</th>
+                  <th>Cidade</th>
+                  <th>Valor</th>
+                  <th>Pagamento</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaPassagens">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">
+          <i data-lucide="search" style="width: 100%; height: 100%;"></i>
+        </div>
+        <p>Selecione um período e clique em "Gerar Relatório" para visualizar os dados</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="../../js/api.js"></script>
+  <script>
+    let dadosRelatorio = null;
+
+    // Carrega dados do usuário
+    async function loadUserInfo() {
+      try {
+        const user = await api.getCurrentUser();
+        document.getElementById('userName').textContent = user.nome;
+        document.getElementById('userRole').textContent = user.tipo === 'admin' ? 'Administrador' : 'Atendente';
+
+        // Verifica se é admin
+        if (user.tipo !== 'admin') {
+          alert('Acesso negado! Apenas administradores podem acessar esta página.');
+          window.location.href = '../dashboard.html';
+        }
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+        window.location.href = '../login.html';
+      }
+    }
+
+    // Carrega motoristas
+    async function loadMotoristas() {
+      try {
+        const motoristas = await api.getMotoristas();
+        const select = document.getElementById('motoristaFiltro');
+
+        motoristas.forEach(motorista => {
+          const option = document.createElement('option');
+          option.value = motorista.id;
+          option.textContent = `${motorista.nome} (${motorista.proprietario_nome})`;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar motoristas:', error);
+      }
+    }
+
+    // Define filtros rápidos
+    function setQuickFilter(periodo) {
+      const hoje = new Date();
+      let dataInicio, dataFim;
+
+      switch(periodo) {
+        case 'hoje':
+          dataInicio = dataFim = hoje.toISOString().split('T')[0];
+          break;
+
+        case 'semana':
+          const primeiroDiaSemana = new Date(hoje);
+          primeiroDiaSemana.setDate(hoje.getDate() - hoje.getDay());
+          dataInicio = primeiroDiaSemana.toISOString().split('T')[0];
+          dataFim = hoje.toISOString().split('T')[0];
+          break;
+
+        case 'mes':
+          dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+          dataFim = hoje.toISOString().split('T')[0];
+          break;
+
+        case 'ano':
+          dataInicio = new Date(hoje.getFullYear(), 0, 1).toISOString().split('T')[0];
+          dataFim = hoje.toISOString().split('T')[0];
+          break;
+
+        case 'tudo':
+          dataInicio = '2015-01-01'; // Data da primeira viagem do histórico
+          dataFim = hoje.toISOString().split('T')[0];
+          break;
+      }
+
+      document.getElementById('dataInicio').value = dataInicio;
+      document.getElementById('dataFim').value = dataFim;
+    }
+
+    // Gera relatório
+    async function gerarRelatorio() {
+      const dataInicio = document.getElementById('dataInicio').value;
+      const dataFim = document.getElementById('dataFim').value;
+      const motoristaId = document.getElementById('motoristaFiltro').value;
+
+      if (!dataInicio || !dataFim) {
+        alert('Por favor, selecione o período');
+        return;
+      }
+
+      // Mostra loading
+      document.getElementById('loadingState').style.display = 'flex';
+      document.getElementById('statsSection').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'none';
+
+      try {
+        let relatorio;
+
+        if (motoristaId) {
+          // Relatório por motorista específico
+          relatorio = await api.getRelatorioMotorista(motoristaId, dataInicio, dataFim);
+          dadosRelatorio = adaptarRelatorioMotorista(relatorio);
+        } else {
+          // Relatório geral do período
+          relatorio = await api.getRelatorioPeriodo(dataInicio, dataFim);
+          dadosRelatorio = relatorio;
+        }
+
+        exibirRelatorio(dadosRelatorio);
+      } catch (error) {
+        console.error('Erro ao gerar relatório:', error);
+        alert('Erro ao gerar relatório. Tente novamente.');
+      } finally {
+        document.getElementById('loadingState').style.display = 'none';
+      }
+    }
+
+    // Adapta relatório de motorista para formato padrão
+    function adaptarRelatorioMotorista(relatorio) {
+      const passagens = [];
+
+      relatorio.viagens.forEach(viagem => {
+        viagem.passageiros.forEach(passageiro => {
+          passagens.push({
+            numero: 0,
+            data_viagem: viagem.data,
+            horario: viagem.horario,
+            cliente_nome: passageiro.nome,
+            motorista_nome: relatorio.motorista_nome,
+            proprietario_nome: relatorio.proprietario_nome,
+            local_embarque: passageiro.local_embarque,
+            cidade: '',
+            valor: passageiro.valor,
+            forma_pagamento: 'DINHEIRO'
+          });
+        });
+      });
+
+      return {
+        data_inicio: relatorio.data_inicio,
+        data_fim: relatorio.data_fim,
+        passagens: passagens,
+        total_passagens: relatorio.total_passageiros,
+        total_passageiros: relatorio.total_passageiros,
+        valor_total: relatorio.valor_total,
+        resumo_por_motorista: [{
+          motorista_nome: relatorio.motorista_nome,
+          proprietario_nome: relatorio.proprietario_nome,
+          total_passagens: relatorio.total_passageiros,
+          valor_total: relatorio.valor_total
+        }],
+        resumo_por_forma_pagamento: []
+      };
+    }
+
+    // Exibe relatório
+    function exibirRelatorio(relatorio) {
+      // Atualiza estatísticas
+      document.getElementById('statPassagens').textContent = relatorio.total_passagens.toLocaleString('pt-BR');
+      document.getElementById('statPassageiros').textContent = relatorio.total_passageiros.toLocaleString('pt-BR');
+      document.getElementById('statViagens').textContent = relatorio.total_passagens.toLocaleString('pt-BR');
+      document.getElementById('statFaturamento').textContent = `R$ ${Number(relatorio.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      // Resumo por motorista
+      const resumoMotoristaHTML = relatorio.resumo_por_motorista.map(resumo => `
+        <div class="summary-item">
+          <div class="summary-label">${resumo.motorista_nome}</div>
+          <div class="summary-value">
+            ${resumo.total_passagens} viagens • R$ ${Number(resumo.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('resumoMotorista').innerHTML = resumoMotoristaHTML;
+
+      // Resumo por forma de pagamento
+      const resumoPagamentoHTML = relatorio.resumo_por_forma_pagamento.map(resumo => `
+        <div class="summary-item">
+          <div class="summary-label">${resumo.forma_pagamento}</div>
+          <div class="summary-value">
+            ${resumo.total_passagens} passagens • R$ ${Number(resumo.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('resumoPagamento').innerHTML = resumoPagamentoHTML;
+
+      // Tabela de passagens
+      const passagensHTML = relatorio.passagens.map(passagem => {
+        const data = new Date(passagem.data_viagem + 'T00:00:00');
+        const dataFormatada = data.toLocaleDateString('pt-BR');
+
+        return `
+          <tr>
+            <td>${passagem.numero || '-'}</td>
+            <td>${dataFormatada}</td>
+            <td>${passagem.horario}</td>
+            <td>${passagem.cliente_nome}</td>
+            <td>${passagem.motorista_nome}</td>
+            <td>${passagem.proprietario_nome}</td>
+            <td>${passagem.local_embarque}</td>
+            <td>${passagem.cidade || '-'}</td>
+            <td>R$ ${Number(passagem.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            <td><span class="badge badge-info">${passagem.forma_pagamento}</span></td>
+          </tr>
+        `;
+      }).join('');
+      document.getElementById('tabelaPassagens').innerHTML = passagensHTML;
+      document.getElementById('totalRegistros').textContent = relatorio.passagens.length.toLocaleString('pt-BR');
+
+      // Mostra seção de stats
+      document.getElementById('statsSection').style.display = 'block';
+      document.getElementById('btnExportar').style.display = 'inline-flex';
+
+      // Atualiza ícones
+      lucide.createIcons();
+    }
+
+    // Exporta CSV
+    function exportarCSV() {
+      if (!dadosRelatorio || !dadosRelatorio.passagens) {
+        alert('Nenhum dado para exportar');
+        return;
+      }
+
+      const headers = ['Nº Passagem', 'Data', 'Horário', 'Cliente', 'Motorista', 'Proprietário', 'Local', 'Cidade', 'Valor', 'Pagamento'];
+
+      const rows = dadosRelatorio.passagens.map(p => {
+        const data = new Date(p.data_viagem + 'T00:00:00');
+        const dataFormatada = data.toLocaleDateString('pt-BR');
+
+        return [
+          p.numero || '-',
+          dataFormatada,
+          p.horario,
+          p.cliente_nome,
+          p.motorista_nome,
+          p.proprietario_nome,
+          p.local_embarque,
+          p.cidade || '-',
+          `R$ ${Number(p.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+          p.forma_pagamento
+        ];
+      });
+
+      let csv = headers.join(',') + '\n';
+      rows.forEach(row => {
+        csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      const dataInicio = document.getElementById('dataInicio').value;
+      const dataFim = document.getElementById('dataFim').value;
+
+      link.setAttribute('href', url);
+      link.setAttribute('download', `historico_${dataInicio}_${dataFim}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Limpa filtros
+    function limparFiltros() {
+      document.getElementById('dataInicio').value = '';
+      document.getElementById('dataFim').value = '';
+      document.getElementById('motoristaFiltro').value = '';
+      document.getElementById('statsSection').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('btnExportar').style.display = 'none';
+      dadosRelatorio = null;
+    }
+
+    // Logout
+    function logout() {
+      if (confirm('Deseja realmente sair?')) {
+        localStorage.removeItem('token');
+        window.location.href = '../../login.html';
+      }
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserInfo();
+      loadMotoristas();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

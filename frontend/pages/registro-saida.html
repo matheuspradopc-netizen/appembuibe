@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Saída - Expresso Embuibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="bus"></i>
+        </div>
+        <span class="sidebar-logo-text">Expresso Embuibe</span>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-section">
+          <div class="menu-section-title">Menu Principal</div>
+          <a href="dashboard.html" class="menu-item">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="emissao.html" class="menu-item">
+            <i data-lucide="ticket"></i>
+            <span>Emitir Passagem</span>
+          </a>
+          <a href="clientes.html" class="menu-item">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="relatorio.html" class="menu-item">
+            <i data-lucide="file-text"></i>
+            <span>Relatório Diário</span>
+          </a>
+          <a href="registro-saida.html" class="menu-item active">
+            <i data-lucide="log-out"></i>
+            <span>Registro de Saída</span>
+          </a>
+        </div>
+
+        <div class="menu-section">
+          <div class="menu-section-title">Sistema</div>
+          <a href="#" class="menu-item" id="logoutBtn">
+            <i data-lucide="power"></i>
+            <span>Sair</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="userAvatar">U</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="userName">Carregando...</div>
+            <div class="sidebar-user-role">Atendente</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <header class="header">
+        <h1 class="header-title">Registro de Saída de Viagem</h1>
+        <div class="header-actions">
+          <a href="dashboard.html" class="btn btn-ghost">
+            <i data-lucide="arrow-left"></i>
+            <span>Voltar</span>
+          </a>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- FORMULÁRIO DE BUSCA -->
+        <div class="card animate-fade-in">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Dados da Viagem</h2>
+              <p class="card-subtitle">Informe data, horário e motorista para buscar passageiros</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="buscaForm">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label form-label-required">Data da Viagem</label>
+                  <input type="date" class="form-input" id="dataViagem" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label form-label-required">Horário</label>
+                  <select class="form-select" id="horario" required>
+                    <option value="">Selecione</option>
+                    <option value="06:00">06:00</option>
+                    <option value="08:00">08:00</option>
+                    <option value="10:00">10:00</option>
+                    <option value="12:00">12:00</option>
+                    <option value="14:00">14:00</option>
+                    <option value="16:00">16:00</option>
+                    <option value="18:00">18:00</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label form-label-required">Motorista</label>
+                  <select class="form-select" id="motoristaId" required>
+                    <option value="">Selecione</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg" id="buscarBtn" style="width: 100%; margin-top: 0.5rem;">
+                <i data-lucide="search"></i>
+                <span>Buscar Passageiros</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- MANIFESTO -->
+        <div class="card animate-slide-up stagger-1 hidden" id="manifestoCard" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Manifesto de Passageiros</h2>
+              <p class="card-subtitle" id="manifestoSubtitle">-</p>
+            </div>
+            <button class="btn btn-sm btn-ghost" onclick="imprimirManifesto()">
+              <i data-lucide="printer"></i>
+              <span>Imprimir</span>
+            </button>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-container" id="manifestoTable">
+              <!-- Tabela será inserida aqui -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RESUMO E CONFIRMAÇÃO -->
+        <div class="grid-2 animate-slide-up stagger-2 hidden" id="resumoCard" style="margin-top: 1.5rem; gap: 1.5rem;">
+          <!-- RESUMO -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Resumo da Viagem</h2>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--primary-50); border-radius: var(--radius-lg);">
+                  <div>
+                    <div class="text-tiny" style="color: var(--primary-600); margin-bottom: 0.25rem;">TOTAL DE PASSAGEIROS</div>
+                    <div class="text-h2" style="color: var(--primary-600);" id="totalPassageiros">0</div>
+                  </div>
+                  <div style="width: 56px; height: 56px; background: var(--primary-600); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: white;">
+                    <i data-lucide="users" style="width: 32px; height: 32px;"></i>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--success-50); border-radius: var(--radius-lg);">
+                  <div>
+                    <div class="text-tiny" style="color: var(--success-600); margin-bottom: 0.25rem;">VALOR TOTAL</div>
+                    <div class="text-h2" style="color: var(--success-600);" id="valorTotal">R$ 0,00</div>
+                  </div>
+                  <div style="width: 56px; height: 56px; background: var(--success-600); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: white;">
+                    <i data-lucide="dollar-sign" style="width: 32px; height: 32px;"></i>
+                  </div>
+                </div>
+
+                <!-- Detalhes -->
+                <div style="padding: 1rem; background: var(--slate-50); border-radius: var(--radius-lg);">
+                  <div class="text-tiny" style="color: var(--slate-500); margin-bottom: 0.75rem;">DETALHES</div>
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                      <span class="text-small" style="color: var(--slate-600);">Data</span>
+                      <strong class="text-small" id="resumoData">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span class="text-small" style="color: var(--slate-600);">Horário</span>
+                      <strong class="text-small" id="resumoHorario">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span class="text-small" style="color: var(--slate-600);">Motorista</span>
+                      <strong class="text-small" id="resumoMotorista">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span class="text-small" style="color: var(--slate-600);">Proprietário</span>
+                      <strong class="text-small" id="resumoProprietario">-</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AÇÕES -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Confirmar Saída</h2>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info">
+                <i data-lucide="info"></i>
+                <div>
+                  <strong>Atenção!</strong>
+                  <p style="margin-top: 0.25rem;">
+                    Ao confirmar a saída, o status da viagem será atualizado e não poderá ser desfeito.
+                    Certifique-se de que todos os passageiros embarcaram.
+                  </p>
+                </div>
+              </div>
+
+              <div style="margin-top: 1.5rem;">
+                <div class="form-group">
+                  <label class="form-label">Observações da Viagem</label>
+                  <textarea class="form-textarea" id="observacoes" placeholder="Informações adicionais sobre a viagem (opcional)" rows="4"></textarea>
+                </div>
+
+                <button class="btn btn-success btn-lg" id="confirmarBtn" onclick="confirmarSaida()" style="width: 100%; margin-top: 1rem;">
+                  <i data-lucide="check-circle"></i>
+                  <span>Confirmar Saída da Viagem</span>
+                </button>
+
+                <button class="btn btn-ghost btn-lg" onclick="limparFormulario()" style="width: 100%; margin-top: 0.75rem;">
+                  <i data-lucide="x"></i>
+                  <span>Cancelar e Limpar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL SUCESSO -->
+  <div id="successModal" class="modal-overlay hidden animate-scale-in">
+    <div class="modal" style="max-width: 500px;">
+      <div class="modal-header" style="background: var(--success-50); border-bottom: none;">
+        <h3 class="modal-title" style="color: var(--success-700);">Saída Registrada com Sucesso!</h3>
+        <button class="modal-close" onclick="fecharModalSucesso()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; padding: 1rem 1rem 0;">
+          <div style="width: 64px; height: 64px; background: var(--success-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--success-600);">
+            <i data-lucide="check-circle" style="width: 32px; height: 32px;"></i>
+          </div>
+        </div>
+
+        <!-- Dados da Viagem -->
+        <div style="background: var(--slate-50); border-radius: var(--radius-lg); padding: 1rem; margin-top: 1rem;">
+          <div class="text-tiny" style="color: var(--slate-500); margin-bottom: 0.75rem; text-align: center;">DADOS DA VIAGEM</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span class="text-small" style="color: var(--slate-600);">Data</span>
+              <strong class="text-small" id="modalData">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="text-small" style="color: var(--slate-600);">Horário</span>
+              <strong class="text-small" id="modalHorario">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="text-small" style="color: var(--slate-600);">Motorista</span>
+              <strong class="text-small" id="modalMotorista">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="text-small" style="color: var(--slate-600);">Proprietário</span>
+              <strong class="text-small" style="color: var(--primary-600);" id="modalProprietario">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 0.5rem; border-top: 1px solid var(--slate-200);">
+              <span class="text-small" style="color: var(--slate-600);">Total Passageiros</span>
+              <strong class="text-small" id="modalPassageiros">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="text-small" style="color: var(--slate-600);">Valor Total</span>
+              <strong class="text-small" style="color: var(--success-600);" id="modalValor">-</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="imprimirManifesto()">
+          <i data-lucide="printer"></i>
+          <span>Imprimir</span>
+        </button>
+        <button class="btn btn-primary" onclick="novoRegistro()">
+          <i data-lucide="plus"></i>
+          <span>Novo Registro</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Verificar autenticação
+    if (!api.client.getToken()) {
+      window.location.href = '../index.html';
+    }
+
+    lucide.createIcons();
+
+    let motoristas = [];
+    let passageiros = [];
+    let dadosViagem = null;
+
+    // Carregar usuário
+    async function loadUserData() {
+      try {
+        const user = await api.getMe();
+        document.getElementById('userName').textContent = user.nome;
+        const initials = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+      }
+    }
+
+    // Carregar motoristas
+    async function carregarMotoristas() {
+      try {
+        motoristas = await api.getMotoristas();
+        const select = document.getElementById('motoristaId');
+        select.innerHTML = '<option value="">Selecione</option>';
+        motoristas.forEach(m => {
+          select.innerHTML += `<option value="${m.id}">${m.nome}</option>`;
+        });
+      } catch (error) {
+        console.error('Erro ao carregar motoristas:', error);
+      }
+    }
+
+    // Buscar passageiros
+    document.getElementById('buscaForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('buscarBtn');
+      btn.classList.add('btn-loading');
+      btn.disabled = true;
+
+      try {
+        const data = document.getElementById('dataViagem').value;
+        const horario = document.getElementById('horario').value;
+        const motoristaId = parseInt(document.getElementById('motoristaId').value);
+
+        // Buscar manifesto de passageiros EMITIDAS
+        const resultado = await api.buscarManifesto({
+          data: data,
+          horario: horario,
+          motorista_id: motoristaId
+        });
+
+        // Armazena dados da viagem incluindo proprietário da API
+        dadosViagem = {
+          data,
+          horario,
+          motorista_id: motoristaId,
+          motorista_nome: resultado.motorista_nome || motoristas.find(m => m.id === motoristaId)?.nome || 'Desconhecido',
+          proprietario_nome: resultado.proprietario_nome || '-'
+        };
+
+        // Armazena passageiros do resultado
+        passageiros = resultado.passageiros || [];
+
+        // Renderizar manifesto
+        renderizarManifesto();
+
+        // Mostrar cards
+        document.getElementById('manifestoCard').classList.remove('hidden');
+        document.getElementById('resumoCard').classList.remove('hidden');
+
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Erro ao buscar passageiros:', error);
+        alert(`Erro ao buscar passageiros: ${error.message}`);
+      } finally {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+      }
+    });
+
+    // Renderizar manifesto
+    function renderizarManifesto() {
+      const dataObj = new Date(dadosViagem.data + 'T00:00:00');
+      const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+
+      document.getElementById('manifestoSubtitle').textContent =
+        `${dataFormatada} às ${dadosViagem.horario} - ${dadosViagem.motorista_nome}`;
+
+      const table = document.getElementById('manifestoTable');
+      if (passageiros.length === 0) {
+        table.innerHTML = `
+          <div style="padding: 3rem; text-align: center; color: var(--slate-400);">
+            <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+            <p>Nenhum passageiro encontrado para esta viagem</p>
+          </div>
+        `;
+      } else {
+        table.innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Passageiro</th>
+                <th>Origem</th>
+                <th>Local de Embarque</th>
+                <th>Pagamento</th>
+                <th style="text-align: right;">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${passageiros.map((p, idx) => `
+                <tr>
+                  <td><strong>${idx + 1}</strong></td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                      <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600; font-size: 0.75rem;">
+                        ${(p.cliente_nome || 'X').charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <strong>${p.cliente_nome || 'N/A'}</strong>
+                        <div style="font-size: 0.75rem; color: var(--slate-500);">${p.cliente_telefone || 'N/A'}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>${p.cidade || 'N/A'}</td>
+                  <td>${p.local_embarque || 'N/A'}</td>
+                  <td><span class="badge badge-neutral">${p.forma_pagamento || 'N/A'}</span></td>
+                  <td style="text-align: right; font-weight: 600;">R$ ${(p.valor || 0).toFixed(2).replace('.', ',')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      // Atualizar resumo
+      const total = (passageiros || []).reduce((sum, p) => sum + (p.valor || 0), 0);
+      document.getElementById('totalPassageiros').textContent = (passageiros || []).length;
+      document.getElementById('valorTotal').textContent = `R$ ${(total || 0).toFixed(2).replace('.', ',')}`;
+      document.getElementById('resumoData').textContent = dataFormatada;
+      document.getElementById('resumoHorario').textContent = dadosViagem.horario;
+      document.getElementById('resumoMotorista').textContent = dadosViagem.motorista_nome;
+      document.getElementById('resumoProprietario').textContent = dadosViagem.proprietario_nome || '-';
+
+      lucide.createIcons();
+    }
+
+    // Confirmar saída
+    async function confirmarSaida() {
+      if (!dadosViagem || passageiros.length === 0) {
+        alert('Busque uma viagem com passageiros primeiro');
+        return;
+      }
+
+      if (!confirm('Confirmar a saída desta viagem?')) {
+        return;
+      }
+
+      const btn = document.getElementById('confirmarBtn');
+      btn.classList.add('btn-loading');
+      btn.disabled = true;
+
+      try {
+        const dados = {
+          data: dadosViagem.data,
+          horario: dadosViagem.horario,
+          motorista_id: dadosViagem.motorista_id,
+          observacoes: document.getElementById('observacoes').value || null
+        };
+
+        await api.registrarSaida(dados);
+
+        // Preencher dados no modal de sucesso
+        const dataObj = new Date(dadosViagem.data + 'T00:00:00');
+        const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+        const valorTotal = passageiros.reduce((sum, p) => sum + (p.valor || 0), 0);
+
+        document.getElementById('modalData').textContent = dataFormatada;
+        document.getElementById('modalHorario').textContent = dadosViagem.horario;
+        document.getElementById('modalMotorista').textContent = dadosViagem.motorista_nome;
+        document.getElementById('modalProprietario').textContent = dadosViagem.proprietario_nome || '-';
+        document.getElementById('modalPassageiros').textContent = passageiros.length;
+        document.getElementById('modalValor').textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+
+        document.getElementById('successModal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Erro ao confirmar saída:', error);
+        alert(`Erro ao confirmar saída: ${error.message}`);
+      } finally {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+      }
+    }
+
+    // Funções auxiliares
+    function limparFormulario() {
+      document.getElementById('buscaForm').reset();
+      document.getElementById('observacoes').value = '';
+      document.getElementById('manifestoCard').classList.add('hidden');
+      document.getElementById('resumoCard').classList.add('hidden');
+      passageiros = [];
+      dadosViagem = null;
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('dataViagem').value = hoje;
+    }
+
+    function fecharModalSucesso() {
+      document.getElementById('successModal').classList.add('hidden');
+    }
+
+    function novoRegistro() {
+      fecharModalSucesso();
+      limparFormulario();
+    }
+
+    function irParaDashboard() {
+      window.location.href = 'dashboard.html';
+    }
+
+    function imprimirManifesto() {
+      window.print();
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Deseja realmente sair?')) {
+        api.logout();
+      }
+    });
+
+    // Inicializar
+    loadUserData();
+    carregarMotoristas();
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('dataViagem').value = hoje;
+  </script>
+</body>
+</html>

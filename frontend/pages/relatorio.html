@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Diário - Expresso Embuibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="bus"></i>
+        </div>
+        <span class="sidebar-logo-text">Expresso Embuibe</span>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-section">
+          <div class="menu-section-title">Menu Principal</div>
+          <a href="dashboard.html" class="menu-item">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="emissao.html" class="menu-item">
+            <i data-lucide="ticket"></i>
+            <span>Emitir Passagem</span>
+          </a>
+          <a href="clientes.html" class="menu-item">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="relatorio.html" class="menu-item active">
+            <i data-lucide="file-text"></i>
+            <span>Relatório Diário</span>
+          </a>
+          <a href="registro-saida.html" class="menu-item">
+            <i data-lucide="log-out"></i>
+            <span>Registro de Saída</span>
+          </a>
+        </div>
+
+        <div class="menu-section">
+          <div class="menu-section-title">Sistema</div>
+          <a href="#" class="menu-item" id="logoutBtn">
+            <i data-lucide="power"></i>
+            <span>Sair</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="userAvatar">U</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="userName">Carregando...</div>
+            <div class="sidebar-user-role">Atendente</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <header class="header">
+        <h1 class="header-title">Relatório Diário</h1>
+        <div class="header-actions">
+          <button class="btn btn-success" id="copyWhatsappBtn" onclick="copiarWhatsApp()">
+            <i data-lucide="message-circle"></i>
+            <span>Copiar para WhatsApp</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- SELETOR DE DATA -->
+        <div class="card animate-fade-in">
+          <div class="card-body">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+              <div class="form-group" style="margin: 0; flex: 1; max-width: 300px;">
+                <label class="form-label">Data do Relatório</label>
+                <input type="date" class="form-input" id="dataRelatorio" onchange="carregarRelatorio()">
+              </div>
+              <button class="btn btn-primary" onclick="carregarRelatorio()" style="margin-top: 1.5rem;">
+                <i data-lucide="search"></i>
+                <span>Buscar</span>
+              </button>
+              <button class="btn btn-ghost" onclick="setarHoje()" style="margin-top: 1.5rem;">
+                <i data-lucide="calendar"></i>
+                <span>Hoje</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESUMO -->
+        <div class="grid-3 animate-slide-up stagger-1" style="margin-top: 1.5rem;">
+          <div class="metric-card" style="--icon-bg: var(--primary-50); --icon-color: var(--primary-600);">
+            <div class="metric-icon">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Total de Passageiros</div>
+              <div class="metric-value" id="totalPassageiros">-</div>
+            </div>
+          </div>
+
+          <div class="metric-card" style="--icon-bg: var(--success-50); --icon-color: var(--success-600);">
+            <div class="metric-icon">
+              <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Faturamento Total</div>
+              <div class="metric-value" id="faturamentoTotal">-</div>
+            </div>
+          </div>
+
+          <div class="metric-card" style="--icon-bg: var(--warning-50); --icon-color: var(--warning-500);">
+            <div class="metric-icon">
+              <i data-lucide="bus"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Total de Viagens</div>
+              <div class="metric-value" id="totalViagens">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LISTA AGRUPADA POR HORÁRIO -->
+        <div class="card animate-slide-up stagger-2" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Passagens por Horário</h2>
+              <p class="card-subtitle" id="subtituloRelatorio">Selecione uma data</p>
+            </div>
+            <button class="btn btn-sm btn-ghost" onclick="carregarRelatorio()">
+              <i data-lucide="refresh-cw"></i>
+            </button>
+          </div>
+          <div class="card-body" id="relatorioContent">
+            <div style="text-align: center; padding: 3rem; color: var(--slate-400);">
+              <i data-lucide="calendar" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+              <p>Selecione uma data para visualizar o relatório</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Verificar autenticação
+    if (!api.client.getToken()) {
+      window.location.href = '../index.html';
+    }
+
+    lucide.createIcons();
+
+    let relatorioAtual = null;
+
+    // Carregar usuário
+    async function loadUserData() {
+      try {
+        const user = await api.getMe();
+        document.getElementById('userName').textContent = user.nome;
+        const initials = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+      }
+    }
+
+    // Setar data de hoje
+    function setarHoje() {
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('dataRelatorio').value = hoje;
+      carregarRelatorio();
+    }
+
+    // Carregar relatório
+    async function carregarRelatorio() {
+      const data = document.getElementById('dataRelatorio').value;
+      if (!data) {
+        alert('Selecione uma data');
+        return;
+      }
+
+      const content = document.getElementById('relatorioContent');
+      content.innerHTML = `
+        <div style="text-align: center; padding: 3rem; color: var(--slate-400);">
+          <i data-lucide="loader" style="width: 48px; height: 48px; animation: spin 1s linear infinite; margin-bottom: 1rem;"></i>
+          <p>Carregando relatório...</p>
+        </div>
+      `;
+      lucide.createIcons();
+
+      try {
+        const relatorio = await api.getRelatorioDiario(data);
+        relatorioAtual = relatorio;
+
+        // Atualizar métricas
+        document.getElementById('totalPassageiros').textContent = relatorio.total_passageiros || 0;
+        document.getElementById('faturamentoTotal').textContent =
+          `R$ ${(relatorio.faturamento_total || 0).toFixed(2).replace('.', ',')}`;
+        document.getElementById('totalViagens').textContent = relatorio.total_viagens || 0;
+
+        // Atualizar subtítulo
+        const dataObj = new Date(data + 'T00:00:00');
+        document.getElementById('subtituloRelatorio').textContent =
+          dataObj.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Renderizar lista agrupada
+        if (relatorio.viagens && relatorio.viagens.length > 0) {
+          content.innerHTML = relatorio.viagens.map(viagem => `
+            <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--slate-100);">
+              <!-- Cabeçalho da Viagem -->
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <div style="width: 48px; height: 48px; background: var(--primary-600); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: white;">
+                    <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-h3">${viagem.horario || '--:--'}</h3>
+                    <p class="text-small" style="color: var(--slate-500);">
+                      Motorista: ${viagem.motorista || 'N/A'} | ${(viagem.passageiros || []).length} passageiros
+                    </p>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="text-tiny" style="color: var(--slate-500); margin-bottom: 0.25rem;">FATURAMENTO</div>
+                  <div class="text-h3" style="color: var(--success-600);">
+                    R$ ${(viagem.valor_total || 0).toFixed(2).replace('.', ',')}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lista de Passageiros -->
+              <div style="background: var(--slate-50); border-radius: var(--radius-lg); padding: 1rem;">
+                ${(viagem.passageiros || []).length > 0 ? `
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tbody>
+                      ${(viagem.passageiros || []).map((p, idx) => `
+                        <tr style="${idx > 0 ? 'border-top: 1px solid var(--slate-200);' : ''}">
+                          <td style="padding: 0.75rem 0.5rem; width: 40px;">
+                            <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600; font-size: 0.75rem;">
+                              ${(p.cliente_nome || 'X').charAt(0).toUpperCase()}
+                            </div>
+                          </td>
+                          <td style="padding: 0.75rem 0.5rem;">
+                            <strong style="font-size: 0.875rem; color: var(--slate-800);">${p.cliente_nome || 'N/A'}</strong>
+                            <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 0.125rem;">
+                              ${p.cidade || 'N/A'} - ${p.local_embarque || 'N/A'}
+                            </div>
+                          </td>
+                          <td style="padding: 0.75rem 0.5rem; text-align: right;">
+                            <span class="badge badge-neutral">${p.forma_pagamento || 'N/A'}</span>
+                          </td>
+                          <td style="padding: 0.75rem 0.5rem; text-align: right; font-weight: 600; color: var(--slate-800);">
+                            R$ ${(p.valor || 0).toFixed(2).replace('.', ',')}
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                ` : `
+                  <p style="text-align: center; padding: 1rem; color: var(--slate-400);">
+                    Nenhum passageiro nesta viagem
+                  </p>
+                `}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          content.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--slate-400);">
+              <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+              <p>Nenhuma passagem encontrada para esta data</p>
+            </div>
+          `;
+        }
+
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Erro ao carregar relatório:', error);
+        content.innerHTML = `
+          <div style="text-align: center; padding: 3rem; color: var(--error-500);">
+            <i data-lucide="alert-circle" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+            <p>Erro ao carregar relatório</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    // Copiar para WhatsApp
+    function copiarWhatsApp() {
+      if (!relatorioAtual || !relatorioAtual.viagens || relatorioAtual.viagens.length === 0) {
+        alert('Carregue um relatório primeiro');
+        return;
+      }
+
+      const data = document.getElementById('dataRelatorio').value;
+      const dataObj = new Date(data + 'T00:00:00');
+      const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+
+      let mensagem = `📊 *RELATÓRIO DIÁRIO - EXPRESSO EMBUIBE*\n`;
+      mensagem += `📅 Data: ${dataFormatada}\n\n`;
+      mensagem += `👥 Total de Passageiros: *${relatorioAtual.total_passageiros || 0}*\n`;
+      mensagem += `💰 Faturamento Total: *R$ ${(relatorioAtual.faturamento_total || 0).toFixed(2).replace('.', ',')}*\n`;
+      mensagem += `🚌 Total de Viagens: *${relatorioAtual.total_viagens || 0}*\n`;
+      mensagem += `\n━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+      (relatorioAtual.viagens || []).forEach(viagem => {
+        const passageiros = viagem.passageiros || [];
+        mensagem += `🕐 *${viagem.horario || '--:--'}* - ${viagem.motorista || 'N/A'}\n`;
+        mensagem += `👥 ${passageiros.length} passageiros | 💵 R$ ${(viagem.valor_total || 0).toFixed(2).replace('.', ',')}\n\n`;
+
+        if (passageiros.length > 0) {
+          passageiros.forEach((p, idx) => {
+            mensagem += `${idx + 1}. ${p.cliente_nome || 'N/A'}\n`;
+            mensagem += `   📍 ${p.cidade || 'N/A'} - ${p.local_embarque || 'N/A'}\n`;
+            mensagem += `   💳 ${p.forma_pagamento || 'N/A'} | R$ ${(p.valor || 0).toFixed(2).replace('.', ',')}\n`;
+          });
+        }
+
+        mensagem += `\n━━━━━━━━━━━━━━━━━━━━\n\n`;
+      });
+
+      mensagem += `_Relatório gerado automaticamente pelo Sistema Expresso Embuibe_`;
+
+      // Copiar para clipboard
+      navigator.clipboard.writeText(mensagem).then(() => {
+        const btn = document.getElementById('copyWhatsappBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check"></i><span>Copiado!</span>';
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-primary');
+        lucide.createIcons();
+
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-success');
+          lucide.createIcons();
+        }, 2000);
+      }).catch(err => {
+        console.error('Erro ao copiar:', err);
+        alert('Erro ao copiar para a área de transferência');
+      });
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Deseja realmente sair?')) {
+        api.logout();
+      }
+    });
+
+    // Inicializar
+    loadUserData();
+    setarHoje();
+  </script>
+</body>
+</html>

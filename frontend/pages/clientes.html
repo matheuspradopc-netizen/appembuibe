@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Clientes - Expresso Embuibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="bus"></i>
+        </div>
+        <span class="sidebar-logo-text">Expresso Embuibe</span>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-section">
+          <div class="menu-section-title">Menu Principal</div>
+          <a href="dashboard.html" class="menu-item">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="emissao.html" class="menu-item">
+            <i data-lucide="ticket"></i>
+            <span>Emitir Passagem</span>
+          </a>
+          <a href="clientes.html" class="menu-item active">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="relatorio.html" class="menu-item">
+            <i data-lucide="file-text"></i>
+            <span>Relatório Diário</span>
+          </a>
+          <a href="registro-saida.html" class="menu-item">
+            <i data-lucide="log-out"></i>
+            <span>Registro de Saída</span>
+          </a>
+        </div>
+
+        <div class="menu-section">
+          <div class="menu-section-title">Sistema</div>
+          <a href="#" class="menu-item" id="logoutBtn">
+            <i data-lucide="power"></i>
+            <span>Sair</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="userAvatar">U</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="userName">Carregando...</div>
+            <div class="sidebar-user-role">Atendente</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <header class="header">
+        <h1 class="header-title">Gestão de Clientes</h1>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="abrirModalNovoCliente()">
+            <i data-lucide="user-plus"></i>
+            <span>Novo Cliente</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- FILTROS E BUSCA -->
+        <div class="card animate-fade-in">
+          <div class="card-body">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+              <div class="form-input-group" style="flex: 1;">
+                <span class="form-input-icon">
+                  <i data-lucide="search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="searchInput"
+                  placeholder="Buscar por nome, telefone ou cidade..."
+                  style="padding-left: 2.75rem;"
+                >
+              </div>
+              <button class="btn btn-ghost" onclick="limparBusca()">
+                <i data-lucide="x"></i>
+                <span>Limpar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA DE CLIENTES -->
+        <div class="card animate-slide-up stagger-1" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Clientes Cadastrados</h2>
+              <p class="card-subtitle" id="totalClientes">Carregando...</p>
+            </div>
+            <button class="btn btn-sm btn-ghost" onclick="carregarClientes()">
+              <i data-lucide="refresh-cw"></i>
+              <span>Atualizar</span>
+            </button>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Cidade</th>
+                    <th>Bairro</th>
+                    <th>Cadastro</th>
+                    <th style="text-align: right;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="clientesTable">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--slate-400);">
+                      <i data-lucide="loader" style="width: 32px; height: 32px; animation: spin 1s linear infinite; margin-bottom: 0.5rem;"></i>
+                      <p>Carregando clientes...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- PAGINAÇÃO -->
+          <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--slate-100); display: flex; align-items: center; justify-content: space-between;">
+            <div class="text-small" style="color: var(--slate-600);">
+              Mostrando <strong id="showingFrom">0</strong> a <strong id="showingTo">0</strong> de <strong id="totalCount">0</strong> clientes
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-sm btn-ghost" id="prevBtn" onclick="paginaAnterior()" disabled>
+                <i data-lucide="chevron-left"></i>
+              </button>
+              <button class="btn btn-sm btn-ghost" id="nextBtn" onclick="proximaPagina()" disabled>
+                <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL CLIENTE -->
+  <div id="clienteModal" class="modal-overlay hidden animate-scale-in">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Novo Cliente</h3>
+        <button class="modal-close" onclick="fecharModalCliente()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="clienteForm">
+          <input type="hidden" id="clienteId">
+
+          <div class="form-group">
+            <label class="form-label form-label-required">Nome Completo</label>
+            <input type="text" class="form-input" id="nome" required placeholder="Digite o nome completo">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label-required">Telefone</label>
+            <input type="tel" class="form-input" id="telefone" required placeholder="(00) 00000-0000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label-required">Cidade</label>
+            <input type="text" class="form-input" id="cidade" required placeholder="Nome da cidade">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Bairro</label>
+            <input type="text" class="form-input" id="bairro" placeholder="Nome do bairro (opcional)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Observações</label>
+            <textarea class="form-textarea" id="observacoesCliente" placeholder="Informações adicionais (opcional)" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="fecharModalCliente()">
+          <span>Cancelar</span>
+        </button>
+        <button class="btn btn-primary" id="salvarClienteBtn" onclick="salvarCliente()">
+          <i data-lucide="check"></i>
+          <span>Salvar Cliente</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMAÇÃO EXCLUSÃO -->
+  <div id="deleteModal" class="modal-overlay hidden animate-scale-in">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirmar Exclusão</h3>
+        <button class="modal-close" onclick="fecharModalDelete()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; padding: 1rem;">
+          <div style="width: 64px; height: 64px; background: var(--error-50); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--error-500);">
+            <i data-lucide="alert-triangle" style="width: 32px; height: 32px;"></i>
+          </div>
+          <p class="text-body" style="color: var(--slate-700);">
+            Tem certeza que deseja excluir o cliente <strong id="deleteClienteName"></strong>?
+          </p>
+          <p class="text-small" style="color: var(--slate-500); margin-top: 0.5rem;">
+            Esta ação não pode ser desfeita.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="fecharModalDelete()">
+          <span>Cancelar</span>
+        </button>
+        <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmarExclusao()">
+          <i data-lucide="trash-2"></i>
+          <span>Excluir Cliente</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Verificar autenticação
+    if (!api.client.getToken()) {
+      window.location.href = '../index.html';
+    }
+
+    lucide.createIcons();
+
+    let clientes = [];
+    let clientesFiltrados = [];
+    let totalClientes = 0;
+    let paginaAtual = 1;
+    let itensPorPagina = 10;
+    let clienteParaExcluir = null;
+
+    // Carregar usuário
+    async function loadUserData() {
+      try {
+        const user = await api.getMe();
+        document.getElementById('userName').textContent = user.nome;
+        const initials = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+      }
+    }
+
+    // Carregar clientes
+    async function carregarClientes() {
+      try {
+        const response = await api.getClientes({ limit: 50000 });
+        clientes = response.items || response;
+        totalClientes = response.total || clientes.length;
+        clientesFiltrados = [...clientes];
+        renderizarClientes();
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        const tbody = document.getElementById('clientesTable');
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 3rem; color: var(--error-500);">
+              <i data-lucide="alert-circle" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+              <p>Erro ao carregar clientes</p>
+            </td>
+          </tr>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    // Renderizar clientes
+    function renderizarClientes() {
+      const tbody = document.getElementById('clientesTable');
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = inicio + itensPorPagina;
+      const clientesPagina = clientesFiltrados.slice(inicio, fim);
+
+      if (clientesFiltrados.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 3rem; color: var(--slate-400);">
+              <i data-lucide="users" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+              <p>Nenhum cliente encontrado</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = clientesPagina.map(cliente => `
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 32px; height: 32px; background: var(--primary-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; color: var(--primary-600); font-weight: 600; font-size: 0.75rem;">
+                  ${(cliente.nome || 'X').charAt(0).toUpperCase()}
+                </div>
+                <strong>${cliente.nome}</strong>
+              </div>
+            </td>
+            <td>${cliente.telefone}</td>
+            <td>${cliente.cidade}</td>
+            <td>${cliente.bairro || '-'}</td>
+            <td>${cliente.created_at ? new Date(cliente.created_at).toLocaleDateString('pt-BR') : '-'}</td>
+            <td>
+              <div class="table-actions" style="justify-content: flex-end;">
+                <button class="btn btn-sm btn-ghost" onclick="editarCliente(${cliente.id})" title="Editar">
+                  <i data-lucide="edit-2"></i>
+                </button>
+                <button class="btn btn-sm btn-ghost" onclick="abrirModalDelete(${cliente.id}, '${cliente.nome}')" title="Excluir">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Atualizar informações de paginação
+      document.getElementById('totalClientes').textContent = `${totalClientes} clientes cadastrados`;
+      document.getElementById('showingFrom').textContent = clientesFiltrados.length > 0 ? inicio + 1 : 0;
+      document.getElementById('showingTo').textContent = Math.min(fim, clientesFiltrados.length);
+      document.getElementById('totalCount').textContent = totalClientes;
+
+      // Botões de paginação
+      document.getElementById('prevBtn').disabled = paginaAtual === 1;
+      document.getElementById('nextBtn').disabled = fim >= clientesFiltrados.length;
+
+      lucide.createIcons();
+    }
+
+    // Busca
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const termo = e.target.value.toLowerCase();
+      clientesFiltrados = clientes.filter(cliente =>
+        cliente.nome.toLowerCase().includes(termo) ||
+        cliente.telefone.toLowerCase().includes(termo) ||
+        cliente.cidade.toLowerCase().includes(termo) ||
+        (cliente.bairro && cliente.bairro.toLowerCase().includes(termo))
+      );
+      paginaAtual = 1;
+      renderizarClientes();
+    });
+
+    function limparBusca() {
+      document.getElementById('searchInput').value = '';
+      clientesFiltrados = [...clientes];
+      paginaAtual = 1;
+      renderizarClientes();
+    }
+
+    // Paginação
+    function proximaPagina() {
+      paginaAtual++;
+      renderizarClientes();
+    }
+
+    function paginaAnterior() {
+      paginaAtual--;
+      renderizarClientes();
+    }
+
+    // Modal Novo Cliente
+    function abrirModalNovoCliente() {
+      document.getElementById('modalTitle').textContent = 'Novo Cliente';
+      document.getElementById('clienteForm').reset();
+      document.getElementById('clienteId').value = '';
+      document.getElementById('clienteModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function fecharModalCliente() {
+      document.getElementById('clienteModal').classList.add('hidden');
+    }
+
+    // Editar Cliente
+    async function editarCliente(id) {
+      try {
+        const cliente = await api.getCliente(id);
+        document.getElementById('modalTitle').textContent = 'Editar Cliente';
+        document.getElementById('clienteId').value = cliente.id;
+        document.getElementById('nome').value = cliente.nome;
+        document.getElementById('telefone').value = cliente.telefone;
+        document.getElementById('cidade').value = cliente.cidade;
+        document.getElementById('bairro').value = cliente.bairro || '';
+        document.getElementById('observacoesCliente').value = cliente.observacoes || '';
+        document.getElementById('clienteModal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Erro ao carregar cliente:', error);
+        alert('Erro ao carregar dados do cliente');
+      }
+    }
+
+    // Salvar Cliente
+    async function salvarCliente() {
+      const form = document.getElementById('clienteForm');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const btn = document.getElementById('salvarClienteBtn');
+      btn.classList.add('btn-loading');
+      btn.disabled = true;
+
+      try {
+        const dados = {
+          nome: document.getElementById('nome').value,
+          telefone: document.getElementById('telefone').value,
+          cidade: document.getElementById('cidade').value,
+          bairro: document.getElementById('bairro').value || null,
+          observacoes: document.getElementById('observacoesCliente').value || null
+        };
+
+        const id = document.getElementById('clienteId').value;
+        if (id) {
+          await api.updateCliente(id, dados);
+        } else {
+          await api.createCliente(dados);
+        }
+
+        fecharModalCliente();
+        await carregarClientes();
+      } catch (error) {
+        console.error('Erro ao salvar cliente:', error);
+        alert(`Erro ao salvar cliente: ${error.message}`);
+      } finally {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+      }
+    }
+
+    // Modal Delete
+    function abrirModalDelete(id, nome) {
+      clienteParaExcluir = id;
+      document.getElementById('deleteClienteName').textContent = nome;
+      document.getElementById('deleteModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function fecharModalDelete() {
+      document.getElementById('deleteModal').classList.add('hidden');
+      clienteParaExcluir = null;
+    }
+
+    async function confirmarExclusao() {
+      if (!clienteParaExcluir) return;
+
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.classList.add('btn-loading');
+      btn.disabled = true;
+
+      try {
+        await api.deleteCliente(clienteParaExcluir);
+        fecharModalDelete();
+        await carregarClientes();
+      } catch (error) {
+        console.error('Erro ao excluir cliente:', error);
+        alert(`Erro ao excluir cliente: ${error.message}`);
+      } finally {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+      }
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Deseja realmente sair?')) {
+        api.logout();
+      }
+    });
+
+    // Inicializar
+    loadUserData();
+    carregarClientes();
+  </script>
+</body>
+</html>

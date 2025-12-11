@@ -1,0 +1,985 @@
+# ============================================================================
+# SISTEMA EXPRESSO EMBUIBE - PLANO DE DESENVOLVIMENTO
+# ============================================================================
+# Autor: Otimizia (Matheus Prado)
+# Cliente: Expresso Embuibe
+# Data: 09/12/2025
+# Versão: 1.0
+# ============================================================================
+
+projeto:
+  nome: "Sistema Expresso Embuibe"
+  descricao: "Sistema web para gestão de transporte de passageiros - emissão de passagens, relatórios e controle de viagens"
+  cliente: "Expresso Embuibe"
+  rota_principal: "Peruíbe/Litoral Sul → Embu das Artes"
+  
+stack_tecnologica:
+  backend:
+    linguagem: "Python 3.11+"
+    framework: "FastAPI"
+    orm: "SQLAlchemy"
+    banco_dados: "PostgreSQL"
+    autenticacao: "JWT (python-jose)"
+    hash_senha: "bcrypt (passlib)"
+    geracao_pdf: "ReportLab"
+    servidor: "Uvicorn"
+    
+  frontend:
+    tipo: "SPA (Single Page Application)"
+    framework: "HTML + JavaScript Vanilla"
+    css: "TailwindCSS (CDN)"
+    icones: "Lucide Icons"
+    responsivo: true
+    
+  deploy:
+    plataforma: "Replit"
+    plano: "Core ($25/mês)"
+    banco: "PostgreSQL Nativo Replit"
+    dominio: "expresso-embuibe.replit.app (inicial)"
+
+# ============================================================================
+# ESTRUTURA DE PASTAS
+# ============================================================================
+
+estrutura_pastas:
+  raiz: "expresso-embuibe/"
+  arvore:
+    - "expresso-embuibe/"
+    - "├── backend/"
+    - "│   ├── app/"
+    - "│   │   ├── __init__.py"
+    - "│   │   ├── main.py                 # FastAPI app principal"
+    - "│   │   ├── config.py               # Configurações e variáveis de ambiente"
+    - "│   │   ├── database.py             # Conexão com banco de dados"
+    - "│   │   ├── models/"
+    - "│   │   │   ├── __init__.py"
+    - "│   │   │   ├── usuario.py          # Model de usuários"
+    - "│   │   │   ├── cliente.py          # Model de clientes/passageiros"
+    - "│   │   │   ├── proprietario.py     # Model de proprietários"
+    - "│   │   │   ├── motorista.py        # Model de motoristas"
+    - "│   │   │   ├── local_embarque.py   # Model de locais de embarque"
+    - "│   │   │   ├── passagem.py         # Model de passagens"
+    - "│   │   │   └── viagem.py           # Model de viagens/saídas"
+    - "│   │   ├── schemas/"
+    - "│   │   │   ├── __init__.py"
+    - "│   │   │   ├── usuario.py          # Schemas Pydantic usuários"
+    - "│   │   │   ├── cliente.py          # Schemas Pydantic clientes"
+    - "│   │   │   ├── passagem.py         # Schemas Pydantic passagens"
+    - "│   │   │   └── relatorio.py        # Schemas Pydantic relatórios"
+    - "│   │   ├── routers/"
+    - "│   │   │   ├── __init__.py"
+    - "│   │   │   ├── auth.py             # Rotas de autenticação"
+    - "│   │   │   ├── clientes.py         # CRUD clientes"
+    - "│   │   │   ├── passagens.py        # Emissão de passagens"
+    - "│   │   │   ├── relatorios.py       # Geração de relatórios"
+    - "│   │   │   ├── viagens.py          # Registro de saídas"
+    - "│   │   │   └── dashboard.py        # Dados do dashboard"
+    - "│   │   ├── services/"
+    - "│   │   │   ├── __init__.py"
+    - "│   │   │   ├── pdf_service.py      # Geração de PDF das passagens"
+    - "│   │   │   └── relatorio_service.py # Lógica de relatórios"
+    - "│   │   └── utils/"
+    - "│   │       ├── __init__.py"
+    - "│   │       ├── security.py         # Funções de segurança/JWT"
+    - "│   │       └── helpers.py          # Funções auxiliares"
+    - "│   ├── requirements.txt"
+    - "│   └── seed_data.py                # Script para popular dados iniciais"
+    - "├── frontend/"
+    - "│   ├── index.html                  # Página de login"
+    - "│   ├── atendente/"
+    - "│   │   ├── dashboard.html          # Menu principal atendente"
+    - "│   │   ├── emissao.html            # Tela de emissão de passagem"
+    - "│   │   ├── clientes.html           # Cadastro/busca de clientes"
+    - "│   │   ├── relatorio-diario.html   # Relatório do dia"
+    - "│   │   └── registro-saida.html     # Registro de saída de viagem"
+    - "│   ├── admin/"
+    - "│   │   ├── dashboard.html          # Dashboard proprietário"
+    - "│   │   └── relatorios.html         # Relatórios com filtros"
+    - "│   ├── css/"
+    - "│   │   └── custom.css              # Estilos customizados"
+    - "│   └── js/"
+    - "│       ├── api.js                  # Cliente API (fetch)"
+    - "│       ├── auth.js                 # Lógica de autenticação"
+    - "│       ├── emissao.js              # Lógica emissão passagem"
+    - "│       ├── clientes.js             # Lógica clientes"
+    - "│       ├── relatorios.js           # Lógica relatórios"
+    - "│       └── utils.js                # Funções utilitárias"
+    - "├── .env                            # Variáveis de ambiente"
+    - "├── .gitignore"
+    - "└── README.md"
+
+# ============================================================================
+# BANCO DE DADOS - SCHEMA COMPLETO
+# ============================================================================
+
+banco_dados:
+  nome: "expresso_embuibe"
+  
+  tabelas:
+    usuarios:
+      descricao: "Usuários do sistema (admin e atendentes)"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "nome"
+          tipo: "VARCHAR(100) NOT NULL"
+        - nome: "login"
+          tipo: "VARCHAR(50) UNIQUE NOT NULL"
+        - nome: "senha_hash"
+          tipo: "VARCHAR(255) NOT NULL"
+        - nome: "tipo"
+          tipo: "VARCHAR(20) NOT NULL"
+          valores: "admin, atendente"
+        - nome: "ativo"
+          tipo: "BOOLEAN DEFAULT TRUE"
+        - nome: "created_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+        - nome: "updated_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+          
+    clientes:
+      descricao: "Passageiros cadastrados"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "nome"
+          tipo: "VARCHAR(200) NOT NULL"
+        - nome: "telefone"
+          tipo: "VARCHAR(20) NOT NULL"
+        - nome: "endereco"
+          tipo: "VARCHAR(255) NOT NULL"
+        - nome: "bairro"
+          tipo: "VARCHAR(100) NOT NULL"
+        - nome: "cidade"
+          tipo: "VARCHAR(100) NOT NULL"
+        - nome: "cep"
+          tipo: "VARCHAR(10) NOT NULL"
+        - nome: "ativo"
+          tipo: "BOOLEAN DEFAULT TRUE"
+        - nome: "created_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+        - nome: "updated_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+      indices:
+        - "CREATE INDEX idx_clientes_nome ON clientes(nome)"
+        - "CREATE INDEX idx_clientes_telefone ON clientes(telefone)"
+        
+    proprietarios:
+      descricao: "Donos das vans"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "nome"
+          tipo: "VARCHAR(100) NOT NULL"
+        - nome: "ativo"
+          tipo: "BOOLEAN DEFAULT TRUE"
+        - nome: "created_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+          
+    motoristas:
+      descricao: "Motoristas vinculados aos proprietários"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "nome"
+          tipo: "VARCHAR(100) NOT NULL"
+        - nome: "proprietario_id"
+          tipo: "INTEGER REFERENCES proprietarios(id)"
+        - nome: "vagas"
+          tipo: "INTEGER NOT NULL"
+          default: 14
+        - nome: "ativo"
+          tipo: "BOOLEAN DEFAULT TRUE"
+        - nome: "created_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+          
+    cidades:
+      descricao: "Cidades de origem"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "nome"
+          tipo: "VARCHAR(100) NOT NULL UNIQUE"
+        - nome: "ordem"
+          tipo: "INTEGER DEFAULT 0"
+          
+    locais_embarque:
+      descricao: "Pontos de embarque com valores"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "cidade_id"
+          tipo: "INTEGER REFERENCES cidades(id)"
+        - nome: "nome"
+          tipo: "VARCHAR(150) NOT NULL"
+        - nome: "valor"
+          tipo: "DECIMAL(10,2) NOT NULL"
+        - nome: "ativo"
+          tipo: "BOOLEAN DEFAULT TRUE"
+        - nome: "created_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+          
+    passagens:
+      descricao: "Passagens emitidas"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "numero"
+          tipo: "INTEGER UNIQUE NOT NULL"
+          descricao: "Número sequencial da passagem"
+        - nome: "cliente_id"
+          tipo: "INTEGER REFERENCES clientes(id)"
+        - nome: "local_embarque_id"
+          tipo: "INTEGER REFERENCES locais_embarque(id)"
+        - nome: "motorista_id"
+          tipo: "INTEGER REFERENCES motoristas(id)"
+        - nome: "horario"
+          tipo: "TIME NOT NULL"
+        - nome: "data_viagem"
+          tipo: "DATE NOT NULL"
+        - nome: "data_emissao"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+        - nome: "valor"
+          tipo: "DECIMAL(10,2) NOT NULL"
+        - nome: "forma_pagamento"
+          tipo: "VARCHAR(20) NOT NULL"
+          valores: "DINHEIRO, CARTAO, PIX"
+        - nome: "atendente_id"
+          tipo: "INTEGER REFERENCES usuarios(id)"
+        - nome: "status"
+          tipo: "VARCHAR(20) DEFAULT 'EMITIDA'"
+          valores: "EMITIDA, CANCELADA, UTILIZADA"
+        - nome: "created_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+      indices:
+        - "CREATE INDEX idx_passagens_data ON passagens(data_viagem)"
+        - "CREATE INDEX idx_passagens_horario ON passagens(horario)"
+        - "CREATE INDEX idx_passagens_motorista ON passagens(motorista_id)"
+        - "CREATE INDEX idx_passagens_cliente ON passagens(cliente_id)"
+        
+    viagens:
+      descricao: "Registro de saída das viagens"
+      campos:
+        - nome: "id"
+          tipo: "SERIAL PRIMARY KEY"
+        - nome: "data"
+          tipo: "DATE NOT NULL"
+        - nome: "horario"
+          tipo: "TIME NOT NULL"
+        - nome: "motorista_id"
+          tipo: "INTEGER REFERENCES motoristas(id)"
+        - nome: "total_passageiros"
+          tipo: "INTEGER NOT NULL"
+        - nome: "valor_total"
+          tipo: "DECIMAL(10,2) NOT NULL"
+        - nome: "atendente_id"
+          tipo: "INTEGER REFERENCES usuarios(id)"
+        - nome: "created_at"
+          tipo: "TIMESTAMP DEFAULT NOW()"
+      indices:
+        - "CREATE INDEX idx_viagens_data ON viagens(data)"
+
+# ============================================================================
+# DADOS INICIAIS (SEED)
+# ============================================================================
+
+dados_iniciais:
+  usuarios:
+    - nome: "Administrador"
+      login: "admin"
+      senha: "embuibe@2025"
+      tipo: "admin"
+    - nome: "Mariana"
+      login: "mariana"
+      senha: "2107"
+      tipo: "atendente"
+    - nome: "Daniela"
+      login: "daniela"
+      senha: "2106"
+      tipo: "atendente"
+      
+  proprietarios_motoristas:
+    - proprietario: "Mauro"
+      motorista: "Adelson Jr"
+      vagas: 15
+    - proprietario: "Pedro"
+      motorista: "Walter"
+      vagas: 14
+    - proprietario: "Zacarias"
+      motorista: "Junior"
+      vagas: 14
+    - proprietario: "Pity"
+      motorista: "Juninho"
+      vagas: 14
+    - proprietario: "Zacarias"
+      motorista: "Gilson"
+      vagas: 14
+    - proprietario: "Geraldo"
+      motorista: "Anderson"
+      vagas: 15
+    - proprietario: "Patrícia"
+      motorista: "Denilson Drum"
+      vagas: 15
+      
+  cidades:
+    - nome: "Peruíbe"
+      ordem: 1
+    - nome: "Itanhaém"
+      ordem: 2
+    - nome: "Mongaguá"
+      ordem: 3
+    - nome: "Praia Grande"
+      ordem: 4
+    - nome: "São Vicente"
+      ordem: 5
+      
+  locais_embarque:
+    peruibe:
+      - local: "Centro"
+        valor: 65.00
+      - local: "Casa"
+        valor: 65.00
+      - local: "Santa Cruz"
+        valor: 65.00
+        
+    itanhaem:
+      - local: "Gaivotas"
+        valor: 65.00
+      - local: "Bopiranga"
+        valor: 65.00
+      - local: "Rodoviária"
+        valor: 65.00
+      - local: "Santa Julia"
+        valor: 65.00
+      - local: "Jardim Itanhaém"
+        valor: 65.00
+      - local: "Cabuçu"
+        valor: 60.00
+      - local: "Suarão"
+        valor: 60.00
+      - local: "Jardim Suarão"
+        valor: 60.00
+      - local: "Jardim São João"
+        valor: 65.00
+      - local: "Jardim São Fernando"
+        valor: 65.00
+      - local: "Jardim Grandesp"
+        valor: 65.00
+      - local: "Tupi"
+        valor: 65.00
+      - local: "Cibratel 2"
+        valor: 65.00
+      - local: "Cibratel"
+        valor: 65.00
+      - local: "Savoy"
+        valor: 60.00
+      - local: "Nova Itanhaém"
+        valor: 60.00
+      - local: "Jequitibá"
+        valor: 60.00
+      - local: "Vila Loty"
+        valor: 60.00
+      - local: "Campos Eliseos"
+        valor: 60.00
+        
+    mongagua:
+      - local: "Florida Mirim"
+        valor: 60.00
+      - local: "Agenor de Campos"
+        valor: 60.00
+      - local: "Jussara"
+        valor: 60.00
+      - local: "Itaóca"
+        valor: 60.00
+      - local: "Jardim Santa Eugênia"
+        valor: 60.00
+      - local: "Jardim Praia Grande"
+        valor: 60.00
+      - local: "Nossa Sra de Fátima"
+        valor: 60.00
+      - local: "Vera Cruz"
+        valor: 60.00
+      - local: "Pedreira"
+        valor: 60.00
+        
+    praia_grande:
+      - local: "Jardim Alice"
+        valor: 60.00
+      - local: "Cidade da Criança"
+        valor: 60.00
+      - local: "Jardim Solemar"
+        valor: 60.00
+      - local: "Jardim Samambaia"
+        valor: 60.00
+      - local: "Flórida"
+        valor: 60.00
+      - local: "Jardim Princesa"
+        valor: 60.00
+      - local: "Jardim Real"
+        valor: 60.00
+      - local: "Jardim Imperador"
+        valor: 60.00
+      - local: "Vila Caiçara"
+        valor: 60.00
+      - local: "Jardim Melvi"
+        valor: 60.00
+      - local: "Curva do S"
+        valor: 60.00
+      - local: "CDP"
+        valor: 60.00
+        
+    sao_vicente:
+      - local: "Jardim Samaritá"
+        valor: 60.00
+      - local: "Rio Branco"
+        valor: 60.00
+      - local: "Parque das Bandeiras"
+        valor: 60.00
+      - local: "Presídio"
+        valor: 60.00
+      - local: "Humaitá"
+        valor: 60.00
+      - local: "Vale Verde"
+        valor: 60.00
+
+  configuracoes:
+    destino_padrao: "Embu das Artes"
+    numero_passagem_inicial: 30000
+    formas_pagamento:
+      - "DINHEIRO"
+      - "CARTAO"
+      - "PIX"
+
+# ============================================================================
+# API ENDPOINTS
+# ============================================================================
+
+api:
+  base_url: "/api/v1"
+  
+  autenticacao:
+    - endpoint: "POST /auth/login"
+      descricao: "Login do usuário"
+      body: 
+        login: "string"
+        senha: "string"
+      response:
+        access_token: "string"
+        token_type: "bearer"
+        usuario:
+          id: "int"
+          nome: "string"
+          tipo: "string"
+          
+    - endpoint: "GET /auth/me"
+      descricao: "Dados do usuário logado"
+      headers: "Authorization: Bearer {token}"
+      response:
+        id: "int"
+        nome: "string"
+        tipo: "string"
+        
+  clientes:
+    - endpoint: "GET /clientes"
+      descricao: "Listar clientes com busca"
+      params:
+        q: "string (busca por nome ou telefone)"
+        page: "int"
+        limit: "int"
+        
+    - endpoint: "GET /clientes/{id}"
+      descricao: "Buscar cliente por ID"
+      
+    - endpoint: "POST /clientes"
+      descricao: "Criar novo cliente"
+      body:
+        nome: "string"
+        telefone: "string"
+        endereco: "string"
+        bairro: "string"
+        cidade: "string"
+        cep: "string"
+        
+    - endpoint: "PUT /clientes/{id}"
+      descricao: "Atualizar cliente"
+      
+  passagens:
+    - endpoint: "POST /passagens"
+      descricao: "Emitir nova passagem"
+      body:
+        cliente_id: "int"
+        local_embarque_id: "int"
+        motorista_id: "int"
+        horario: "string (HH:MM)"
+        data_viagem: "string (YYYY-MM-DD)"
+        forma_pagamento: "string"
+      response:
+        passagem:
+          numero: "int"
+          valor: "decimal"
+        pdf_base64: "string"
+        
+    - endpoint: "GET /passagens/{id}"
+      descricao: "Buscar passagem por ID"
+      
+    - endpoint: "GET /passagens/{id}/pdf"
+      descricao: "Gerar PDF da passagem"
+      response_type: "application/pdf"
+      
+    - endpoint: "GET /passagens/dia/{data}"
+      descricao: "Listar passagens do dia"
+      
+  locais:
+    - endpoint: "GET /cidades"
+      descricao: "Listar cidades"
+      
+    - endpoint: "GET /cidades/{id}/locais"
+      descricao: "Listar locais de embarque por cidade"
+      
+  motoristas:
+    - endpoint: "GET /motoristas"
+      descricao: "Listar motoristas com proprietário"
+      response:
+        - id: "int"
+          nome: "string"
+          vagas: "int"
+          proprietario:
+            id: "int"
+            nome: "string"
+            
+  relatorios:
+    - endpoint: "GET /relatorios/diario"
+      descricao: "Relatório do dia atual"
+      params:
+        data: "string (YYYY-MM-DD) opcional"
+      response:
+        data: "string"
+        horarios:
+          - horario: "06:00"
+            viagens:
+              - motorista: "string"
+                proprietario: "string"
+                passageiros: "int"
+                valor_total: "decimal"
+        total_passageiros: "int"
+        valor_total: "decimal"
+        
+    - endpoint: "GET /relatorios/periodo"
+      descricao: "Relatório por período"
+      params:
+        data_inicio: "string (YYYY-MM-DD)"
+        data_fim: "string (YYYY-MM-DD)"
+        
+    - endpoint: "GET /relatorios/motorista/{id}"
+      descricao: "Relatório por motorista"
+      params:
+        data_inicio: "string"
+        data_fim: "string"
+        
+  viagens:
+    - endpoint: "POST /viagens/registrar-saida"
+      descricao: "Registrar saída de viagem"
+      body:
+        data: "string (YYYY-MM-DD)"
+        horario: "string (HH:MM)"
+        motorista_id: "int"
+      response:
+        viagem:
+          id: "int"
+          total_passageiros: "int"
+          valor_total: "decimal"
+        passageiros:
+          - nome: "string"
+            local_embarque: "string"
+            
+  dashboard:
+    - endpoint: "GET /dashboard/resumo"
+      descricao: "Resumo para dashboard"
+      params:
+        data: "string opcional"
+      response:
+        hoje:
+          passageiros: "int"
+          valor: "decimal"
+          viagens: "int"
+        semana:
+          passageiros: "int"
+          valor: "decimal"
+        mes:
+          passageiros: "int"
+          valor: "decimal"
+        ultimas_viagens:
+          - horario: "string"
+            motorista: "string"
+            passageiros: "int"
+
+# ============================================================================
+# PDF DA PASSAGEM - LAYOUT
+# ============================================================================
+
+pdf_passagem:
+  formato: "A6 (105mm x 148mm)"
+  margens: "10mm"
+  
+  layout:
+    cabecalho:
+      - tipo: "texto"
+        conteudo: "EXPRESSO EMBUIBE"
+        fonte: "Helvetica-Bold"
+        tamanho: 16
+        alinhamento: "centro"
+      - tipo: "linha"
+        espessura: 1
+        
+    corpo:
+      - tipo: "texto"
+        conteudo: "Passagem Nº {numero}"
+        fonte: "Helvetica-Bold"
+        tamanho: 14
+        alinhamento: "centro"
+        margem_top: 10
+        
+      - tipo: "campo"
+        label: "Passageiro"
+        valor: "{cliente_nome}"
+        margem_top: 15
+        
+      - tipo: "campo"
+        label: "Origem"
+        valor: "{cidade} - {local_embarque}"
+        
+      - tipo: "campo"
+        label: "Destino"
+        valor: "Embu das Artes"
+        
+      - tipo: "campo"
+        label: "Data da Viagem"
+        valor: "{data_viagem}"
+        
+      - tipo: "campo"
+        label: "Horário"
+        valor: "{horario}"
+        
+      - tipo: "campo"
+        label: "Valor"
+        valor: "R$ {valor}"
+        
+      - tipo: "campo"
+        label: "Pagamento"
+        valor: "{forma_pagamento}"
+        
+      - tipo: "campo"
+        label: "Emissão"
+        valor: "{data_emissao}"
+        
+      - tipo: "campo"
+        label: "Atendente"
+        valor: "{atendente_nome}"
+        
+    rodape:
+      - tipo: "linha"
+        espessura: 1
+        margem_top: 15
+      - tipo: "texto"
+        conteudo: "Apresente este documento ao motorista no momento do embarque."
+        fonte: "Helvetica"
+        tamanho: 8
+        alinhamento: "centro"
+        margem_top: 5
+
+# ============================================================================
+# FASES DE DESENVOLVIMENTO
+# ============================================================================
+
+fases:
+  fase_1:
+    nome: "Setup Inicial"
+    duracao: "30 minutos"
+    tarefas:
+      - "Criar estrutura de pastas"
+      - "Configurar requirements.txt"
+      - "Configurar .env"
+      - "Criar arquivo main.py básico"
+      - "Configurar conexão com banco de dados"
+    arquivos:
+      - "backend/requirements.txt"
+      - "backend/app/main.py"
+      - "backend/app/config.py"
+      - "backend/app/database.py"
+      - ".env"
+      
+  fase_2:
+    nome: "Models do Banco"
+    duracao: "30 minutos"
+    tarefas:
+      - "Criar todos os models SQLAlchemy"
+      - "Configurar relacionamentos"
+      - "Criar migrations"
+    arquivos:
+      - "backend/app/models/__init__.py"
+      - "backend/app/models/usuario.py"
+      - "backend/app/models/cliente.py"
+      - "backend/app/models/proprietario.py"
+      - "backend/app/models/motorista.py"
+      - "backend/app/models/local_embarque.py"
+      - "backend/app/models/passagem.py"
+      - "backend/app/models/viagem.py"
+      
+  fase_3:
+    nome: "Seed de Dados"
+    duracao: "20 minutos"
+    tarefas:
+      - "Criar script de seed"
+      - "Popular usuários"
+      - "Popular proprietários e motoristas"
+      - "Popular cidades e locais de embarque"
+    arquivos:
+      - "backend/seed_data.py"
+      
+  fase_4:
+    nome: "Autenticação"
+    duracao: "30 minutos"
+    tarefas:
+      - "Implementar hash de senhas"
+      - "Implementar geração de JWT"
+      - "Criar endpoint de login"
+      - "Criar middleware de autenticação"
+    arquivos:
+      - "backend/app/utils/security.py"
+      - "backend/app/schemas/usuario.py"
+      - "backend/app/routers/auth.py"
+      
+  fase_5:
+    nome: "CRUD Clientes"
+    duracao: "30 minutos"
+    tarefas:
+      - "Criar schemas Pydantic"
+      - "Implementar busca com filtros"
+      - "Implementar criação"
+      - "Implementar atualização"
+    arquivos:
+      - "backend/app/schemas/cliente.py"
+      - "backend/app/routers/clientes.py"
+      
+  fase_6:
+    nome: "Emissão de Passagem"
+    duracao: "45 minutos"
+    tarefas:
+      - "Criar schemas de passagem"
+      - "Implementar geração de número sequencial"
+      - "Implementar endpoint de emissão"
+      - "Criar serviço de geração de PDF"
+    arquivos:
+      - "backend/app/schemas/passagem.py"
+      - "backend/app/routers/passagens.py"
+      - "backend/app/services/pdf_service.py"
+      
+  fase_7:
+    nome: "Relatórios"
+    duracao: "45 minutos"
+    tarefas:
+      - "Implementar relatório diário"
+      - "Implementar relatório por período"
+      - "Implementar relatório por motorista"
+      - "Criar schemas de relatório"
+    arquivos:
+      - "backend/app/schemas/relatorio.py"
+      - "backend/app/routers/relatorios.py"
+      - "backend/app/services/relatorio_service.py"
+      
+  fase_8:
+    nome: "Registro de Viagem"
+    duracao: "30 minutos"
+    tarefas:
+      - "Implementar registro de saída"
+      - "Gerar manifesto de passageiros"
+      - "Calcular totais automáticos"
+    arquivos:
+      - "backend/app/routers/viagens.py"
+      
+  fase_9:
+    nome: "Dashboard"
+    duracao: "20 minutos"
+    tarefas:
+      - "Implementar endpoint de resumo"
+      - "Calcular métricas (hoje, semana, mês)"
+      - "Listar últimas viagens"
+    arquivos:
+      - "backend/app/routers/dashboard.py"
+      
+  fase_10:
+    nome: "Endpoints Auxiliares"
+    duracao: "15 minutos"
+    tarefas:
+      - "Endpoint listar cidades"
+      - "Endpoint listar locais por cidade"
+      - "Endpoint listar motoristas"
+    arquivos:
+      - "backend/app/routers/auxiliares.py"
+
+# ============================================================================
+# REQUIREMENTS.TXT
+# ============================================================================
+
+requirements:
+  - "fastapi==0.109.0"
+  - "uvicorn[standard]==0.27.0"
+  - "sqlalchemy==2.0.25"
+  - "psycopg2-binary==2.9.9"
+  - "python-jose[cryptography]==3.3.0"
+  - "passlib[bcrypt]==1.7.4"
+  - "python-multipart==0.0.6"
+  - "pydantic==2.5.3"
+  - "pydantic-settings==2.1.0"
+  - "reportlab==4.0.8"
+  - "python-dotenv==1.0.0"
+
+# ============================================================================
+# VARIÁVEIS DE AMBIENTE
+# ============================================================================
+
+env_vars:
+  DATABASE_URL: "postgresql://user:password@host:5432/expresso_embuibe"
+  SECRET_KEY: "sua-chave-secreta-muito-segura-aqui"
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "480"
+
+# ============================================================================
+# COMANDOS PARA CLAUDE CODE
+# ============================================================================
+
+comandos_claude_code:
+  inicio:
+    - "Leia o arquivo PLANO_EXPRESSO_EMBUIBE.yaml completamente"
+    - "Siga as fases na ordem especificada"
+    - "Crie todos os arquivos conforme a estrutura de pastas"
+    - "Use os dados iniciais do seed para popular o banco"
+    
+  por_fase:
+    fase_1: |
+      Crie a estrutura inicial do projeto:
+      1. Crie todas as pastas conforme estrutura_pastas
+      2. Crie requirements.txt com as dependências listadas
+      3. Crie config.py com as configurações usando pydantic-settings
+      4. Crie database.py com conexão SQLAlchemy ao PostgreSQL
+      5. Crie main.py com FastAPI básico e CORS configurado
+      
+    fase_2: |
+      Crie os models SQLAlchemy:
+      1. Crie cada model conforme schema do banco_dados
+      2. Configure os relacionamentos entre tabelas
+      3. Use type hints do SQLAlchemy 2.0
+      4. Exporte todos os models no __init__.py
+      
+    fase_3: |
+      Crie o script seed_data.py:
+      1. Use os dados_iniciais do YAML
+      2. Hash das senhas com bcrypt
+      3. Insira na ordem correta (respeitando FKs)
+      4. Script idempotente (pode rodar múltiplas vezes)
+      
+    fase_4: |
+      Implemente autenticação JWT:
+      1. Crie security.py com funções de hash e JWT
+      2. Crie schemas de login/token
+      3. Crie rota POST /auth/login
+      4. Crie rota GET /auth/me
+      5. Crie dependência get_current_user
+      
+    fase_5: |
+      Implemente CRUD de clientes:
+      1. Crie schemas Pydantic (create, update, response)
+      2. GET /clientes com busca por nome ou telefone
+      3. GET /clientes/{id}
+      4. POST /clientes
+      5. PUT /clientes/{id}
+      6. Paginação nos endpoints de listagem
+      
+    fase_6: |
+      Implemente emissão de passagem:
+      1. Crie schemas de passagem
+      2. Gere número sequencial (último + 1)
+      3. POST /passagens retorna dados + PDF em base64
+      4. Crie pdf_service.py com ReportLab
+      5. Layout do PDF conforme pdf_passagem do YAML
+      
+    fase_7: |
+      Implemente relatórios:
+      1. GET /relatorios/diario - agrupa por horário
+      2. GET /relatorios/periodo - filtra por data
+      3. GET /relatorios/motorista/{id}
+      4. Inclua totais calculados
+      5. Inclua nome do proprietário nos relatórios
+      
+    fase_8: |
+      Implemente registro de viagem:
+      1. POST /viagens/registrar-saida
+      2. Busca passagens do dia/horário/motorista
+      3. Calcula total de passageiros e valor
+      4. Retorna lista de passageiros para manifesto
+      
+    fase_9: |
+      Implemente dashboard:
+      1. GET /dashboard/resumo
+      2. Métricas: hoje, semana, mês
+      3. Últimas viagens registradas
+      4. Totais de passageiros e valores
+      
+    fase_10: |
+      Implemente endpoints auxiliares:
+      1. GET /cidades
+      2. GET /cidades/{id}/locais
+      3. GET /motoristas (com proprietário)
+      4. Ordene cidades pela ordem definida
+
+# ============================================================================
+# TESTES E VALIDAÇÃO
+# ============================================================================
+
+testes:
+  autenticacao:
+    - "Login admin com credenciais corretas"
+    - "Login atendente com credenciais corretas"
+    - "Login com credenciais erradas retorna 401"
+    - "Acesso sem token retorna 401"
+    
+  clientes:
+    - "Criar cliente com todos os campos"
+    - "Buscar cliente por nome parcial"
+    - "Buscar cliente por telefone"
+    - "Atualizar dados do cliente"
+    
+  passagens:
+    - "Emitir passagem gera número sequencial"
+    - "Emitir passagem retorna PDF válido"
+    - "Valor calculado corretamente pelo local"
+    
+  relatorios:
+    - "Relatório diário agrupa por horário"
+    - "Relatório por período filtra corretamente"
+    - "Totais calculados corretamente"
+    
+  viagens:
+    - "Registro de saída lista passageiros corretos"
+    - "Total de passageiros calculado corretamente"
+
+# ============================================================================
+# NOTAS IMPORTANTES
+# ============================================================================
+
+notas:
+  seguranca:
+    - "Senhas sempre com hash bcrypt"
+    - "JWT expira em 8 horas (um turno de trabalho)"
+    - "CORS configurado para domínios específicos em produção"
+    
+  performance:
+    - "Índices criados nas colunas de busca frequente"
+    - "Paginação em listagens"
+    - "Queries otimizadas com joins"
+    
+  negocio:
+    - "Número da passagem é sequencial e único"
+    - "Destino sempre é Embu das Artes"
+    - "Valor vem do local de embarque selecionado"
+    - "Relatórios mostram proprietário, passagem não"

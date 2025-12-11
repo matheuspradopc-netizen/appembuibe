@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Expresso Embuibe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="bus"></i>
+        </div>
+        <span class="sidebar-logo-text">Expresso Embuibe</span>
+      </div>
+
+      <nav class="sidebar-menu">
+        <div class="menu-section">
+          <div class="menu-section-title">Menu Principal</div>
+          <a href="dashboard.html" class="menu-item active">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="emissao.html" class="menu-item">
+            <i data-lucide="ticket"></i>
+            <span>Emitir Passagem</span>
+          </a>
+          <a href="clientes.html" class="menu-item">
+            <i data-lucide="users"></i>
+            <span>Clientes</span>
+          </a>
+          <a href="relatorio.html" class="menu-item">
+            <i data-lucide="file-text"></i>
+            <span>Relatório Diário</span>
+          </a>
+          <a href="registro-saida.html" class="menu-item">
+            <i data-lucide="log-out"></i>
+            <span>Registro de Saída</span>
+          </a>
+        </div>
+
+        <div class="menu-section">
+          <div class="menu-section-title">Sistema</div>
+          <a href="#" class="menu-item" id="logoutBtn">
+            <i data-lucide="power"></i>
+            <span>Sair</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar" id="userAvatar">U</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="userName">Carregando...</div>
+            <div class="sidebar-user-role" id="userRole">Atendente</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <header class="header">
+        <div>
+          <h1 class="header-title" id="greetingText">Olá, Bem-vindo!</h1>
+          <p class="text-small" style="color: var(--slate-500); margin-top: 0.25rem;" id="currentDateTime">Carregando...</p>
+        </div>
+        <div class="header-actions">
+          <div class="header-user">
+            <i data-lucide="calendar"></i>
+            <span id="todayDate">Hoje</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- MÉTRICAS -->
+        <div class="grid-metrics animate-fade-in">
+          <div class="metric-card stagger-1" style="--icon-bg: var(--primary-50); --icon-color: var(--primary-600);">
+            <div class="metric-icon">
+              <i data-lucide="bus"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Viagens Hoje</div>
+              <div class="metric-value" id="viagensHoje">-</div>
+              <div class="metric-trend positive">
+                <i data-lucide="trending-up"></i>
+                <span>Operacional</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-card stagger-2" style="--icon-bg: var(--success-50); --icon-color: var(--success-600);">
+            <div class="metric-icon">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Passageiros Hoje</div>
+              <div class="metric-value" id="passageirosHoje">-</div>
+              <div class="metric-trend positive">
+                <i data-lucide="trending-up"></i>
+                <span id="passageirosTrend">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-card stagger-3" style="--icon-bg: var(--warning-50); --icon-color: var(--warning-500);">
+            <div class="metric-icon">
+              <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="metric-content">
+              <div class="metric-label">Faturamento Hoje</div>
+              <div class="metric-value" id="faturamentoHoje">-</div>
+              <div class="metric-trend positive">
+                <i data-lucide="trending-up"></i>
+                <span>Ativo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AÇÕES RÁPIDAS -->
+        <div class="animate-slide-up stagger-2" style="max-width: 600px; margin-top: 1.5rem;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Ações Rápidas</h2>
+                <p class="card-subtitle">Acesso rápido às funcionalidades</p>
+              </div>
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; gap: 1rem;">
+              <a href="emissao.html" class="btn btn-primary btn-lg" style="width: 100%;">
+                <i data-lucide="ticket"></i>
+                <span>Emitir Nova Passagem</span>
+              </a>
+
+              <a href="registro-saida.html" class="btn btn-success btn-lg" style="width: 100%;">
+                <i data-lucide="check-circle"></i>
+                <span>Registrar Saída de Viagem</span>
+              </a>
+
+              <a href="clientes.html" class="btn btn-secondary btn-lg" style="width: 100%;">
+                <i data-lucide="user-plus"></i>
+                <span>Cadastrar Cliente</span>
+              </a>
+
+              <a href="relatorio.html" class="btn btn-ghost btn-lg" style="width: 100%; border: 1px solid var(--slate-200);">
+                <i data-lucide="file-text"></i>
+                <span>Ver Relatório do Dia</span>
+              </a>
+
+              <div style="margin-top: 1rem; padding: 1rem; background: var(--slate-50); border-radius: var(--radius-lg);">
+                <div style="display: flex; justify-content: space-between;">
+                  <span class="text-small" style="color: var(--slate-600);">Última atualização</span>
+                  <span class="text-small" style="font-weight: 600; color: var(--slate-800);" id="lastUpdate">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Verificar autenticação
+    if (!api.client.getToken()) {
+      window.location.href = '../index.html';
+    }
+
+    // Inicializar ícones Lucide
+    lucide.createIcons();
+
+    // Atualizar data/hora
+    function updateDateTime() {
+      const now = new Date();
+      const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      document.getElementById('currentDateTime').textContent = now.toLocaleDateString('pt-BR', options);
+
+      const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+      document.getElementById('todayDate').textContent = now.toLocaleDateString('pt-BR', dateOptions);
+
+      const hours = now.getHours();
+      let greeting = 'Bom dia';
+      if (hours >= 12 && hours < 18) greeting = 'Boa tarde';
+      else if (hours >= 18) greeting = 'Boa noite';
+
+      const userName = document.getElementById('userName').textContent;
+      if (userName !== 'Carregando...') {
+        document.getElementById('greetingText').textContent = `${greeting}, ${userName}!`;
+      }
+    }
+
+    // Carregar dados do usuário
+    async function loadUserData() {
+      try {
+        const user = await api.getMe();
+        document.getElementById('userName').textContent = user.nome;
+        document.getElementById('userRole').textContent = user.tipo === 'admin' ? 'Administrador' : 'Atendente';
+
+        // Avatar com iniciais
+        const initials = user.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+
+        updateDateTime();
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+      }
+    }
+
+    // Carregar dashboard
+    async function loadDashboard() {
+      try {
+        const data = await api.getDashboardResumo();
+
+        // Atualizar métricas
+        document.getElementById('viagensHoje').textContent = data.hoje?.viagens || 0;
+        document.getElementById('passageirosHoje').textContent = data.hoje?.passageiros || 0;
+        document.getElementById('faturamentoHoje').textContent =
+          `R$ ${(data.hoje?.valor || 0).toFixed(2).replace('.', ',')}`;
+
+        // Atualizar trend
+        const passageirosHoje = data.hoje?.passageiros || 0;
+        const passageirosSemana = data.semana?.passageiros || 0;
+        const mediaDiaria = Math.floor(passageirosSemana / 7);
+        const trendPercent = mediaDiaria > 0 ? Math.round(((passageirosHoje - mediaDiaria) / mediaDiaria) * 100) : 0;
+        document.getElementById('passageirosTrend').textContent =
+          `${trendPercent > 0 ? '+' : ''}${trendPercent}% vs média`;
+
+        // Atualizar última atualização
+        const now = new Date();
+        document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        lucide.createIcons();
+      } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+      }
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Deseja realmente sair?')) {
+        api.logout();
+      }
+    });
+
+    // Inicializar
+    loadUserData();
+    loadDashboard();
+    setInterval(updateDateTime, 1000);
+    setInterval(loadDashboard, 30000); // Atualizar a cada 30 segundos
+  </script>
+</body>
+</html>
